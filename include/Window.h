@@ -13,7 +13,10 @@ public:
 	Window(int width, int height);
 	~Window() = default;
 	
-	GLFWwindow* GetGLFWWindow() const { return m_window; }
+	[[nodiscard]] GLFWwindow* GetGLFWWindow() const { return m_window; }
+	[[nodiscard]] HWND GetHWND() const { return m_hwnd; }
+	[[nodiscard]] int GetWidth() const { return m_width; }
+	[[nodiscard]] int GetHeight() const { return m_height; }
 
 private:
 	HWND m_hwnd = nullptr;

@@ -19,17 +19,28 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="include\renderer\DescriptorHeap.h" />
+    <ClInclude Include="include\renderer\CommandList.h" />
+    <ClInclude Include="include\renderer\Fence.h" />
+    <ClInclude Include="include\renderer\CommandQueue.h" />
     <ClInclude Include="include\Application.h" />
     <ClInclude Include="include\renderer\Device.h" />
+    <ClInclude Include="include\renderer\HelpersDX.h" />
     <ClInclude Include="include\renderer\Renderer.h" />
     <ClInclude Include="include\Window.h" />
+    <ClInclude Include="include\renderer\SwapChain.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="source\renderer\DescriptorHeap.cpp" />
+    <ClCompile Include="source\renderer\CommandList.cpp" />
+    <ClCompile Include="source\renderer\Fence.cpp" />
+    <ClCompile Include="source\renderer\CommandQueue.cpp" />
     <ClCompile Include="source\Application.cpp" />
     <ClCompile Include="source\main.cpp" />
     <ClCompile Include="source\renderer\Device.cpp" />
     <ClCompile Include="source\renderer\Renderer.cpp" />
     <ClCompile Include="source\Window.cpp" />
+    <ClCompile Include="source\renderer\SwapChain.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>18.0</VCProjectVersion>
@@ -124,7 +135,7 @@
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(ProjectDir)external;$(ProjectDir)external\GLFW\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>glfw3.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>glfw3.lib;d3d12.lib;dxgi.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -142,7 +153,7 @@
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(ProjectDir)external;$(ProjectDir)external\GLFW\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>glfw3.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>glfw3.lib;d3d12.lib;dxgi.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

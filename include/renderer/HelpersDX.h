@@ -1,0 +1,32 @@
+#pragma once
+#include <d3d12.h>
+#include <d3dx12.h>
+#include <iostream>
+#include <stdexcept>
+
+
+inline void ThrowIfFailed(const HRESULT hr, const char* msg = "")
+{
+    if (FAILED(hr))
+    {
+	    char* hrCstr = nullptr;
+    	FormatMessageA(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+		nullptr,
+		hr,
+		0,
+		reinterpret_cast<LPSTR>(&hrCstr),
+		0,
+		nullptr);
+
+    	std::cerr << "HRESULT: " << hrCstr << std::endl;
+    	throw std::runtime_error(msg);
+    }
+}
+
+inline void TransitionResource(ID3D12GraphicsCommandList2* commandList, ID3D12Resource* resource,
+							   const D3D12_RESOURCE_STATES beforeState, const D3D12_RESOURCE_STATES afterState)
+{
+    const CD3DX12_RESOURCE_BARRIER barrier = CD3DX12_RESOURCE_BARRIER::Transition(resource, beforeState, afterState);
+
+    commandList->ResourceBarrier(1, &barrier);
+}

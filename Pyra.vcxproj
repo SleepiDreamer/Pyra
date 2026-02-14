@@ -19,6 +19,10 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="include\renderer\GPUBuffer.h" />
+    <ClInclude Include="include\renderer\GPUAllocator.h" />
+    <ClInclude Include="include\renderer\AccelerationStructure.h" />
+    <ClInclude Include="include\renderer\CommonDX.h" />
     <ClInclude Include="include\renderer\DescriptorHeap.h" />
     <ClInclude Include="include\renderer\CommandList.h" />
     <ClInclude Include="include\renderer\Fence.h" />
@@ -29,8 +33,13 @@
     <ClInclude Include="include\renderer\Renderer.h" />
     <ClInclude Include="include\Window.h" />
     <ClInclude Include="include\renderer\SwapChain.h" />
+    <ClInclude Include="include\renderer\RTPipeline.h" />
+    <ClInclude Include="include\renderer\UploadContext.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="source\renderer\GPUAllocator.cpp" />
+    <ClCompile Include="source\renderer\AccelerationStructure.cpp" />
+    <ClCompile Include="source\renderer\RTPipeline.cpp" />
     <ClCompile Include="source\renderer\DescriptorHeap.cpp" />
     <ClCompile Include="source\renderer\CommandList.cpp" />
     <ClCompile Include="source\renderer\Fence.cpp" />
@@ -41,6 +50,10 @@
     <ClCompile Include="source\renderer\Renderer.cpp" />
     <ClCompile Include="source\Window.cpp" />
     <ClCompile Include="source\renderer\SwapChain.cpp" />
+    <ClCompile Include="source\renderer\UploadContext.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="shaders\raytracing.slang" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>18.0</VCProjectVersion>
@@ -129,7 +142,7 @@
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>$(ProjectDir)external;$(ProjectDir)external\GLFW;$(ProjectDir)external\D3D12;$(ProjectDir)include;$(ProjectDir)include\renderer;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)external;$(ProjectDir)external\GLFW;$(ProjectDir)external\D3D12;$(ProjectDir)external\D3D12MA;$(ProjectDir)include;$(ProjectDir)include\renderer;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -147,7 +160,7 @@
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>$(ProjectDir)external;$(ProjectDir)external\GLFW;$(ProjectDir)external\D3D12;$(ProjectDir)include;$(ProjectDir)include\renderer;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)external;$(ProjectDir)external\GLFW;$(ProjectDir)external\D3D12;$(ProjectDir)external\D3D12MA;$(ProjectDir)include;$(ProjectDir)include\renderer;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>

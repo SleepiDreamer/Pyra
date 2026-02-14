@@ -9,6 +9,7 @@ class CommandQueue;
 class SwapChain;
 class DescriptorHeap;
 class CommandList;
+class UploadContext;
 
 class Renderer
 {
@@ -22,7 +23,8 @@ private:
 	std::unique_ptr<Device> m_device = nullptr;
 	std::unique_ptr<CommandQueue> m_commandQueue = nullptr;
 	std::unique_ptr<CommandList> m_commandList = nullptr;
-	std::unique_ptr<SwapChain> m_swapChain = nullptr;
 	std::unique_ptr<DescriptorHeap> m_descriptorHeap = nullptr;
+	std::unique_ptr<UploadContext> m_uploadContext = nullptr;
+	std::unique_ptr<SwapChain> m_swapChain = nullptr;
 };
 

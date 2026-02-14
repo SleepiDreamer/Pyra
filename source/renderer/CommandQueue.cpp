@@ -1,7 +1,7 @@
 #include "CommandQueue.h"
 #include "CommandList.h"
 #include "Fence.h"
-#include "HelpersDX.h"
+#include "CommonDX.h"
 
 #include <cassert>
 
@@ -18,15 +18,14 @@ CommandQueue::CommandQueue(ID3D12Device2* device, const D3D12_COMMAND_LIST_TYPE 
 	m_fence = std::make_unique<Fence>(device);
 }
 
-CommandQueue::~CommandQueue()
-= default;
+CommandQueue::~CommandQueue() = default;
 
 // Execute the command list. Returns the fence value signaled after execution.
 uint64_t CommandQueue::Execute(CommandList& commandList, const uint32_t frameIndex) const
 {
     assert(commandList.m_type == m_type &&
         "Command queue and command list have incompatible types!");
-    assert(frameIndex < SwapChain::m_numBuffering);
+    assert(frameIndex < NUM_FRAMES_IN_FLIGHT);
 
     commandList.Close();
 

@@ -1,5 +1,5 @@
 #include "DescriptorHeap.h"
-#include "HelpersDX.h"
+#include "CommonDX.h"
 
 #include <d3dx12.h>
 #include <cassert>

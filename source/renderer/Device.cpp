@@ -1,6 +1,6 @@
 #include "Device.h"
 #include "Window.h"
-#include "HelpersDX.h"
+#include "CommonDX.h"
 
 #include <d3d12.h>
 #include <d3dx12.h>
@@ -10,15 +10,17 @@ using namespace Microsoft::WRL;
 
 Device::Device(const int width, const int height)
 {
+#ifdef _DEBUG
 	EnableDebugLayer();
+	std::cout << "Debug layer enabled!" << std::endl;
+#endif
 
 	CreateAdapter();
 
 	CreateDevice();
 }
 
-Device::~Device()
-= default;
+Device::~Device() = default;
 
 void Device::EnableDebugLayer()
 {

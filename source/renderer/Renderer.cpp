@@ -5,7 +5,8 @@
 #include "CommandList.h"
 #include "SwapChain.h"
 #include "DescriptorHeap.h"
-#include "HelpersDX.h"
+#include "UploadContext.h"
+#include "CommonDX.h"
 
 #include <iostream>
 
@@ -20,7 +21,9 @@ Renderer::Renderer(Window& window)
 
 	m_commandList = std::make_unique<CommandList>(m_device->GetDevice(), D3D12_COMMAND_LIST_TYPE_DIRECT);
 
-	m_descriptorHeap = std::make_unique<DescriptorHeap>(m_device->GetDevice(), D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, SwapChain::m_numBuffering, true, L"CBV SRV UAV Descriptor Heap");
+	m_descriptorHeap = std::make_unique<DescriptorHeap>(m_device->GetDevice(), D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, NUM_FRAMES_IN_FLIGHT, true, L"CBV SRV UAV Descriptor Heap");
+
+	m_uploadContext = std::make_unique<UploadContext>(m_commandList->);
 
 	m_swapChain = std::make_unique<SwapChain>(window, m_device->GetDevice(), m_device->GetAdapter(), m_commandQueue.get());
 }

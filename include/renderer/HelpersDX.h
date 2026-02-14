@@ -1,9 +1,7 @@
 #pragma once
-#include <d3d12.h>
 #include <d3dx12.h>
 #include <iostream>
 #include <stdexcept>
-
 
 inline void ThrowIfFailed(const HRESULT hr, const char* msg = "")
 {

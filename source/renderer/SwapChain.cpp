@@ -4,7 +4,7 @@
 #include "DescriptorHeap.h"
 #include "SwapChain.h"
 #include "Window.h"
-#include "HelpersDX.h"
+#include "CommonDX.h"
 
 using namespace Microsoft::WRL;
 
@@ -17,6 +17,9 @@ SwapChain::SwapChain(Window& window, ID3D12Device* device, IDXGIAdapter4* adapte
 	m_useAdaptiveSync = CheckTearingSupport();
 	m_useVsync = !m_useAdaptiveSync;
 	m_useHdr = CheckHDRSupport(adapter);
+
+	std::cout << "Tearing support: " << (m_useAdaptiveSync ? "Yes" : "No") << std::endl;
+	std::cout << "HDR support: " << (m_useHdr ? "Yes" : "No") << std::endl;
 
 	// Create swap chain
 	{
@@ -35,7 +38,7 @@ SwapChain::SwapChain(Window& window, ID3D12Device* device, IDXGIAdapter4* adapte
 		swapChainDesc.Stereo = FALSE;
 		swapChainDesc.SampleDesc = {.Count = 1, .Quality = 0};
 		swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-		swapChainDesc.BufferCount = m_numBuffering;
+		swapChainDesc.BufferCount = NUM_FRAMES_IN_FLIGHT;
 		swapChainDesc.Scaling = DXGI_SCALING_STRETCH;
 		swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
 		swapChainDesc.AlphaMode = DXGI_ALPHA_MODE_UNSPECIFIED;
@@ -60,27 +63,26 @@ SwapChain::SwapChain(Window& window, ID3D12Device* device, IDXGIAdapter4* adapte
 		}
 	}
 
-	m_rtvHeap = std::make_unique<DescriptorHeap>(device, D3D12_DESCRIPTOR_HEAP_TYPE_RTV, m_numBuffering, false, L"Swap Chain RTV Heap");
+	m_rtvHeap = std::make_unique<DescriptorHeap>(device, D3D12_DESCRIPTOR_HEAP_TYPE_RTV, NUM_FRAMES_IN_FLIGHT, false, L"Swap Chain RTV Heap");
 	CreateBackBuffers(device);
 }
 
-SwapChain::~SwapChain()
-= default;
+SwapChain::~SwapChain() = default;
 
 bool SwapChain::CheckTearingSupport()
 {
-	bool tearingSupported = false;
+	BOOL tearingSupported = FALSE;
 	ComPtr<IDXGIFactory5> factory;
 	if (SUCCEEDED(CreateDXGIFactory1(IID_PPV_ARGS(&factory))))
 	{
 		if (FAILED(
 			factory->CheckFeatureSupport(DXGI_FEATURE_PRESENT_ALLOW_TEARING, &tearingSupported, sizeof(tearingSupported))))
 		{
-			tearingSupported = false;
+			tearingSupported = FALSE;
 		}
 	}
 
-	return tearingSupported == true;
+	return tearingSupported == TRUE;
 }
 
 bool SwapChain::CheckHDRSupport(IDXGIAdapter4* adapter)
@@ -111,7 +113,7 @@ void SwapChain::CreateBackBuffers(ID3D12Device* device)
 	rtvDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;
 	rtvDesc.Texture2D.MipSlice = 0;
 
-	for (UINT i = 0; i < m_numBuffering; ++i)
+	for (UINT i = 0; i < NUM_FRAMES_IN_FLIGHT; ++i)
 	{
 		ThrowIfFailed(m_swapChain->GetBuffer(i, IID_PPV_ARGS(&m_backBuffers[i])));
 		m_backBufferRtvs[i] = m_rtvHeap->Allocate();
@@ -122,14 +124,14 @@ void SwapChain::CreateBackBuffers(ID3D12Device* device)
 
 void SwapChain::Resize(const uint32_t width, const uint32_t height, ID3D12Device* device)
 {
-	for (UINT i = 0; i < m_numBuffering; ++i)
+	for (UINT i = 0; i < NUM_FRAMES_IN_FLIGHT; ++i)
 	{
 		m_rtvHeap->Free(m_backBufferRtvs[i]);
 		m_backBuffers[i].Reset();
 	}
 
 	UINT swapChainFlags = m_useAdaptiveSync ? DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING : 0;
-	m_swapChain->ResizeBuffers(m_numBuffering, width, height, m_format, swapChainFlags);
+	m_swapChain->ResizeBuffers(NUM_FRAMES_IN_FLIGHT, width, height, m_format, swapChainFlags);
 	CreateBackBuffers(device);
 }
 

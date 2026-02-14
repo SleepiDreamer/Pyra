@@ -1,7 +1,7 @@
 #include "CommandList.h"
 #include "Fence.h"
 #include "SwapChain.h"
-#include "HelpersDX.h"
+#include "CommonDX.h"
 
 #include <cassert>
 
@@ -9,7 +9,7 @@ using namespace Microsoft::WRL;
 
 CommandList::CommandList(const ComPtr<ID3D12Device10>& device, const D3D12_COMMAND_LIST_TYPE type) : m_type(type)
 {
-    for (uint32_t i = 0; i < SwapChain::m_numBuffering; ++i)
+    for (uint32_t i = 0; i < NUM_FRAMES_IN_FLIGHT; ++i)
     {
         ThrowIfFailed(device->CreateCommandAllocator(type, IID_PPV_ARGS(&m_allocators[i])));
     }
@@ -33,7 +33,7 @@ CommandList::CommandList(const ComPtr<ID3D12Device10>& device, const D3D12_COMMA
 
 void CommandList::Reset(const uint32_t frameIndex, const Fence& fence)
 {
-    assert(frameIndex < SwapChain::m_numBuffering);
+    assert(frameIndex < NUM_FRAMES_IN_FLIGHT);
 
     const uint64_t requiredValue = m_allocatorFenceValues[frameIndex];
     if (requiredValue > 0)

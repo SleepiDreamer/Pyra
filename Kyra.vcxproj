@@ -59,7 +59,7 @@
     <VCProjectVersion>18.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
     <ProjectGuid>{d5fcfafa-9a9f-4d26-addf-c24d8e359377}</ProjectGuid>
-    <RootNamespace>Pyra</RootNamespace>
+    <RootNamespace>Kyra</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />

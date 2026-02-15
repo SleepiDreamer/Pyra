@@ -10,7 +10,7 @@ struct GLFWmonitor;
 class Window
 {
 public:
-	Window(int width, int height);
+	Window(int width, int height, const char* title = "Kyra");
 	~Window() = default;
 	
 	[[nodiscard]] GLFWwindow* GetGLFWWindow() const { return m_window; }

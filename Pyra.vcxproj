@@ -25,7 +25,6 @@
     <ClInclude Include="include\renderer\AccelerationStructure.h" />
     <ClInclude Include="include\renderer\CommonDX.h" />
     <ClInclude Include="include\renderer\DescriptorHeap.h" />
-    <ClInclude Include="include\renderer\CommandList.h" />
     <ClInclude Include="include\renderer\Fence.h" />
     <ClInclude Include="include\renderer\CommandQueue.h" />
     <ClInclude Include="include\Application.h" />
@@ -43,7 +42,6 @@
     <ClCompile Include="source\renderer\AccelerationStructure.cpp" />
     <ClCompile Include="source\renderer\RTPipeline.cpp" />
     <ClCompile Include="source\renderer\DescriptorHeap.cpp" />
-    <ClCompile Include="source\renderer\CommandList.cpp" />
     <ClCompile Include="source\renderer\Fence.cpp" />
     <ClCompile Include="source\renderer\CommandQueue.cpp" />
     <ClCompile Include="source\Application.cpp" />

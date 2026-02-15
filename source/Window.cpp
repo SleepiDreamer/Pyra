@@ -1,5 +1,4 @@
 #include "Window.h"
-
 #define GLFW_EXPOSE_NATIVE_WIN32
 #include <glfw3.h>
 #include <glfw3native.h>
@@ -23,6 +22,4 @@ Window::Window(const int width, const int height)
 
 	m_width = width;
 	m_height = height;
-
-	glfwSetWindowUserPointer(m_window, this);
 }

@@ -18,6 +18,8 @@ public:
 	~Renderer();
 	void Render();
 
+	void ToggleFullscreen() const;
+
 private:
 	Window& m_window;
 	std::unique_ptr<Device> m_device = nullptr;

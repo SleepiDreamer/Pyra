@@ -29,6 +29,11 @@ Renderer::~Renderer()
 	m_commandQueue->Flush();
 }
 
+void Renderer::ToggleFullscreen() const
+{
+	m_swapChain->ToggleFullscreen();
+}
+
 void Renderer::Render()
 {
 	auto backBufferIndex = m_swapChain->GetCurrentBackBufferIndex();

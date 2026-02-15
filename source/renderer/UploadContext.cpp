@@ -3,11 +3,10 @@
 #include "CommandQueue.h"
 #include "HelpersDX.h"
 
-UploadContext::UploadContext(GPUAllocator& allocator, const CommandQueue& queue,
-    const Microsoft::WRL::ComPtr<ID3D12Device10>& device)
-    : m_queue(queue)
-    , m_allocator(allocator)
+UploadContext::UploadContext(GPUAllocator& allocator, const Microsoft::WRL::ComPtr<ID3D12Device10>& device)
+    : m_allocator(allocator)
 {
+    m_queue = std::make_unique<CommandQueue>(device, D3D12_COMMAND_LIST_TYPE_COPY);
 }
 
 UploadContext::~UploadContext()
@@ -27,9 +26,9 @@ void UploadContext::Upload(const GPUBuffer& dest, const void* data, const uint64
     memcpy(mapped, data, size);
     staging->resource->Unmap(0, nullptr);
 
-    // TODO: implement
-    //const auto commandList = m_commandList.GetCommandList();
-    //commandList->CopyBufferRegion(dest.resource, 0, staging->resource, 0, size);
+    auto cmdList = m_queue->GetCommandList();
+    cmdList->CopyBufferRegion(dest.resource, 0, staging->resource, 0, size);
+    m_queue->ExecuteCommandList(cmdList);
 
     m_uploads.push_back(staging);
 }
@@ -39,5 +38,6 @@ void UploadContext::Flush()
     if (m_uploads.empty())
         return;
 
-    // TODO: implement
+    m_queue->Flush();
+    m_uploads.clear();
 }

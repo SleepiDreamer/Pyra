@@ -1,5 +1,6 @@
 #pragma once
 #include "DescriptorHeap.h"
+#include "CommonDX.h"
 
 #include <d3d12.h>
 #include <d3dx12.h>
@@ -22,6 +23,7 @@ public:
 	[[nodiscard]] D3D12_VIEWPORT GetViewport() const { return m_viewport; }
 	[[nodiscard]] D3D12_RECT GetScissorRect() const { return m_scissorRect; }
 
+	void ToggleFullscreen();
 	void CreateBackBuffers(ID3D12Device* device);
 	void Resize(uint32_t width, uint32_t height, ID3D12Device* device);
 	void Present();
@@ -40,4 +42,10 @@ private:
 	bool m_useAdaptiveSync = false;
 	bool m_useVsync = false;
 	bool m_useHdr = false;
+
+	bool m_fullscreen = false;
+	int m_windowedX = 0;
+	int m_windowedY = 0;
+	int m_windowedWidth = 0;
+	int m_windowedHeight = 0;
 };

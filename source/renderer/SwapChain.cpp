@@ -1,10 +1,13 @@
+#include "SwapChain.h"
 #include "Renderer.h"
 #include "CommandQueue.h"
 #include "CommandList.h"
 #include "DescriptorHeap.h"
-#include "SwapChain.h"
 #include "Window.h"
 #include "CommonDX.h"
+
+#include <glfw3.h>
+#include <algorithm>
 
 using namespace Microsoft::WRL;
 
@@ -104,6 +107,57 @@ bool SwapChain::CheckHDRSupport(IDXGIAdapter4* adapter)
 		output.Reset();
 	}
 	return false;
+}
+
+void SwapChain::ToggleFullscreen()
+{
+	m_fullscreen = !m_fullscreen;
+	if (m_fullscreen)
+	{
+		glfwGetWindowPos(m_window.GetGLFWWindow(), &m_windowedX, &m_windowedY);
+		glfwGetWindowSize(m_window.GetGLFWWindow(), &m_windowedWidth, &m_windowedHeight);
+
+		int monitorCount;
+		GLFWmonitor** monitors = glfwGetMonitors(&monitorCount);
+
+		GLFWmonitor* bestMonitor = glfwGetPrimaryMonitor();
+		int bestOverlap = 0;
+
+		for (int i = 0; i < monitorCount; i++)
+		{
+			int mx, my;
+			glfwGetMonitorPos(monitors[i], &mx, &my);
+			const GLFWvidmode* mode = glfwGetVideoMode(monitors[i]);
+
+			int overlapX = max(0, min(m_windowedX + m_windowedWidth, mx + mode->width) - max(m_windowedX, mx));
+			int overlapY = max(0, min(m_windowedY + m_windowedHeight, my + mode->height) - max(m_windowedY, my));
+			int overlap = overlapX * overlapY;
+
+			if (overlap > bestOverlap)
+			{
+				bestOverlap = overlap;
+				bestMonitor = monitors[i];
+			}
+		}
+
+		GLFWmonitor* monitor = bestMonitor;
+		const GLFWvidmode* mode = glfwGetVideoMode(monitor);
+
+		glfwSetWindowAttrib(m_window.GetGLFWWindow(), GLFW_DECORATED, GLFW_FALSE);
+		glfwSetWindowPos(m_window.GetGLFWWindow(), 0, 0);
+		glfwSetWindowSize(m_window.GetGLFWWindow(), mode->width, mode->height);
+
+		std::cout << "Entered Borderless Fullscreen: " << mode->width << "x" << mode->height << "\n";
+	}
+	else
+	{
+		// Restore windowed mode
+		glfwSetWindowAttrib(m_window.GetGLFWWindow(), GLFW_DECORATED, GLFW_TRUE);
+		glfwSetWindowPos(m_window.GetGLFWWindow(), m_windowedX, m_windowedY);
+		glfwSetWindowSize(m_window.GetGLFWWindow(), m_windowedWidth, m_windowedHeight);
+
+		std::cout << "Restored windowed mode: " << m_windowedWidth << "x" << m_windowedHeight << "\n";
+	}
 }
 
 void SwapChain::CreateBackBuffers(ID3D12Device* device)

@@ -6,7 +6,7 @@
 #include <assert.h>
 #include <iostream>
 
-Window::Window(const int width, const int height)
+Window::Window(const int width, const int height, const char* title)
 {
 	if (!glfwInit())
 	{
@@ -16,7 +16,7 @@ Window::Window(const int width, const int height)
 	m_monitor = glfwGetPrimaryMonitor();
 	glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 
-	m_window = glfwCreateWindow(width, height, "Pyra", nullptr, nullptr);
+	m_window = glfwCreateWindow(width, height, title, nullptr, nullptr);
 
 	m_hwnd = glfwGetWin32Window(m_window);
 

@@ -17,7 +17,6 @@ public:
     void Flush();
 private:
 	const CommandQueue& m_queue;
-    CommandList m_commandList;
 	GPUAllocator& m_allocator;
     std::vector<std::shared_ptr<GPUBuffer>> m_uploads;
 };

@@ -19,11 +19,7 @@ Renderer::Renderer(Window& window)
 
 	m_commandQueue = std::make_unique<CommandQueue>(m_device->GetDevice(), D3D12_COMMAND_LIST_TYPE_DIRECT);
 
-	m_commandList = std::make_unique<CommandList>(m_device->GetDevice(), D3D12_COMMAND_LIST_TYPE_DIRECT);
-
 	m_descriptorHeap = std::make_unique<DescriptorHeap>(m_device->GetDevice(), D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, NUM_FRAMES_IN_FLIGHT, true, L"CBV SRV UAV Descriptor Heap");
-
-	m_uploadContext = std::make_unique<UploadContext>(m_commandList->);
 
 	m_swapChain = std::make_unique<SwapChain>(window, m_device->GetDevice(), m_device->GetAdapter(), m_commandQueue.get());
 }
@@ -37,13 +33,12 @@ void Renderer::Render()
 {
 	auto backBufferIndex = m_swapChain->GetCurrentBackBufferIndex();
 	auto backBuffer = m_swapChain->GetCurrentBackBuffer();
-	m_commandList->Reset(backBufferIndex, m_commandQueue->GetFence());
+	auto commandList = m_commandQueue->GetCommandList();
 	auto commandQueue = m_commandQueue->GetQueue();
-	auto commandList = m_commandList->GetCommandList();
 
 	// Begin frame
 	{
-		TransitionResource(commandList, backBuffer, D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET);
+		TransitionResource(commandList.Get(), backBuffer, D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET);
 	}
 
 	// Record commands
@@ -54,9 +49,8 @@ void Renderer::Render()
 
 	// End frame
 	{
-		TransitionResource(commandList, backBuffer, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
-		m_commandList->Close();
-		m_commandQueue->Execute(*m_commandList, backBufferIndex);
+		TransitionResource(commandList.Get(), backBuffer, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
+		m_commandQueue->ExecuteCommandList(commandList);
 		m_swapChain->Present();
 	}
 }

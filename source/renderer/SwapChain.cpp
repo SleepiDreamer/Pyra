@@ -45,7 +45,7 @@ SwapChain::SwapChain(Window& window, ID3D12Device* device, IDXGIAdapter4* adapte
 		swapChainDesc.Flags = m_useAdaptiveSync ? DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING : 0;
 
 		ComPtr<IDXGISwapChain1> swapchain1;
-		ThrowIfFailed(factory->CreateSwapChainForHwnd(commandQueue->GetQueue(), m_window.GetHWND(), &swapChainDesc,
+		ThrowIfFailed(factory->CreateSwapChainForHwnd(commandQueue->GetQueue().Get(), m_window.GetHWND(), &swapChainDesc,
 													  nullptr, nullptr, &swapchain1));
 
 		ThrowIfFailed(factory->MakeWindowAssociation(m_window.GetHWND(), DXGI_MWA_NO_ALT_ENTER));

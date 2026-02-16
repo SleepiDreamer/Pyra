@@ -22,7 +22,7 @@
     <ClInclude Include="external\D3D12MA\D3D12MemAlloc.h" />
     <ClInclude Include="include\renderer\GPUBuffer.h" />
     <ClInclude Include="include\renderer\GPUAllocator.h" />
-    <ClInclude Include="include\renderer\AccelerationStructure.h" />
+    <ClInclude Include="include\renderer\TLAS.h" />
     <ClInclude Include="include\renderer\CommonDX.h" />
     <ClInclude Include="include\renderer\DescriptorHeap.h" />
     <ClInclude Include="include\renderer\Fence.h" />
@@ -39,7 +39,7 @@
   <ItemGroup>
     <ClCompile Include="external\D3D12MA\D3D12MemAlloc.cpp" />
     <ClCompile Include="source\renderer\GPUAllocator.cpp" />
-    <ClCompile Include="source\renderer\AccelerationStructure.cpp" />
+    <ClCompile Include="source\renderer\TLAS.cpp" />
     <ClCompile Include="source\renderer\RTPipeline.cpp" />
     <ClCompile Include="source\renderer\DescriptorHeap.cpp" />
     <ClCompile Include="source\renderer\Fence.cpp" />

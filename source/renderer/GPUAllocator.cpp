@@ -19,7 +19,7 @@ GPUAllocator::~GPUAllocator()
 }
 
 GPUBuffer GPUAllocator::CreateBuffer(const uint64_t size, const D3D12_RESOURCE_STATES initialState,
-									 const D3D12_RESOURCE_FLAGS flags, const D3D12_HEAP_TYPE heapType) const
+									 const D3D12_RESOURCE_FLAGS flags, const D3D12_HEAP_TYPE heapType, const char* name) const
 {
     D3D12_RESOURCE_DESC resourceDesc{};
     resourceDesc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
@@ -45,6 +45,7 @@ GPUBuffer GPUAllocator::CreateBuffer(const uint64_t size, const D3D12_RESOURCE_S
         nullptr,
         &buffer.allocation,
         IID_PPV_ARGS(&buffer.resource)));
+    buffer.resource->SetName(ToWideString(name).c_str());
 
     return buffer;
 }

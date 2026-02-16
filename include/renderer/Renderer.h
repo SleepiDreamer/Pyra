@@ -10,6 +10,7 @@ class SwapChain;
 class DescriptorHeap;
 class CommandList;
 class UploadContext;
+class GPUAllocator;
 
 class Renderer
 {
@@ -25,6 +26,7 @@ private:
 	std::unique_ptr<Device> m_device = nullptr;
 	std::unique_ptr<CommandQueue> m_commandQueue = nullptr;
 	std::unique_ptr<DescriptorHeap> m_descriptorHeap = nullptr;
+	std::unique_ptr<GPUAllocator> m_allocator = nullptr;
 	std::unique_ptr<UploadContext> m_uploadContext = nullptr;
 	std::unique_ptr<SwapChain> m_swapChain = nullptr;
 };

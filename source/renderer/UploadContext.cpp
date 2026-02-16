@@ -3,7 +3,7 @@
 #include "CommandQueue.h"
 #include "HelpersDX.h"
 
-UploadContext::UploadContext(GPUAllocator& allocator, const Microsoft::WRL::ComPtr<ID3D12Device10>& device)
+UploadContext::UploadContext(GPUAllocator& allocator, ID3D12Device10* device)
     : m_allocator(allocator)
 {
     m_queue = std::make_unique<CommandQueue>(device, D3D12_COMMAND_LIST_TYPE_COPY);
@@ -18,7 +18,7 @@ void UploadContext::Upload(const GPUBuffer& dest, const void* data, const uint64
 {
     const auto staging = std::make_shared<GPUBuffer>(
 			m_allocator.CreateBuffer(size, D3D12_RESOURCE_STATE_GENERIC_READ,
-			D3D12_RESOURCE_FLAG_NONE, D3D12_HEAP_TYPE_UPLOAD));
+			D3D12_RESOURCE_FLAG_NONE, D3D12_HEAP_TYPE_UPLOAD, "Upload Staging Buffer"));
 
     void* mapped = nullptr;
     D3D12_RANGE readRange{ 0, 0 };

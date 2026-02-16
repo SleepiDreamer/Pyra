@@ -36,9 +36,6 @@
     <ClInclude Include="include\renderer\Fence.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\renderer\CommandList.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="include\renderer\SwapChain.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -51,7 +48,7 @@
     <ClInclude Include="include\renderer\RTPipeline.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\renderer\AccelerationStructure.h">
+    <ClInclude Include="include\renderer\TLAS.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\renderer\GPUAllocator.h">
@@ -61,6 +58,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\renderer\GPUBuffer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="external\D3D12MA\D3D12MemAlloc.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -86,9 +86,6 @@
     <ClCompile Include="source\renderer\Fence.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="source\renderer\CommandList.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="source\renderer\SwapChain.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -98,13 +95,16 @@
     <ClCompile Include="source\renderer\RTPipeline.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="source\renderer\AccelerationStructure.cpp">
+    <ClCompile Include="source\renderer\TLAS.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="source\renderer\GPUAllocator.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="source\renderer\UploadContext.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="external\D3D12MA\D3D12MemAlloc.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

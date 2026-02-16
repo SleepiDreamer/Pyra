@@ -8,7 +8,7 @@ class CommandQueue;
 class UploadContext
 {
 public:
-    UploadContext(GPUAllocator& allocator, const Microsoft::WRL::ComPtr<ID3D12Device10>& device);
+    UploadContext(GPUAllocator& allocator, ID3D12Device10* device);
     ~UploadContext();
 
     void Upload(const GPUBuffer& dest, const void* data, uint64_t size);

@@ -28,3 +28,12 @@ inline void TransitionResource(ID3D12GraphicsCommandList2* commandList, ID3D12Re
 
     commandList->ResourceBarrier(1, &barrier);
 }
+
+inline std::wstring ToWideString(const char* str)
+{
+    if (!str || !*str) return {};
+    const int len = MultiByteToWideChar(CP_UTF8, 0, str, -1, nullptr, 0);
+    std::wstring wstr(len - 1, L'\0');
+    MultiByteToWideChar(CP_UTF8, 0, str, -1, wstr.data(), len);
+    return wstr;
+}

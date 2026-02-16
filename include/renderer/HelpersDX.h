@@ -37,3 +37,9 @@ inline std::wstring ToWideString(const char* str)
     MultiByteToWideChar(CP_UTF8, 0, str, -1, wstr.data(), len);
     return wstr;
 }
+
+inline void ThrowError(const std::string& msg)
+{
+	std::cerr << msg << std::endl;
+    __debugbreak();
+}

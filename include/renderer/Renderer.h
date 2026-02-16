@@ -15,6 +15,8 @@ class DescriptorHeap;
 class CommandList;
 class UploadContext;
 class GPUAllocator;
+class ShaderCompiler;
+class RTPipeline;
 
 class Renderer
 {
@@ -33,6 +35,8 @@ private:
 	std::unique_ptr<DescriptorHeap> m_descriptorHeap = nullptr;
 	std::unique_ptr<UploadContext> m_uploadContext = nullptr;
 	std::unique_ptr<SwapChain> m_swapChain = nullptr;
+	std::unique_ptr<ShaderCompiler> m_shaderCompiler;
+	std::unique_ptr<RTPipeline> m_rtPipeline;
 
 	std::unique_ptr<Model> m_model;
 	std::unique_ptr<TLAS> m_tlas;

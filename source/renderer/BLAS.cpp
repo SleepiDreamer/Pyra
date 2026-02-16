@@ -15,7 +15,7 @@ BLAS::~BLAS()
 		m_scratch.allocation->Release();
 }
 
-void BLAS::Build(ID3D12Device5* device, const std::vector<D3D12_RAYTRACING_GEOMETRY_DESC>& geometries)
+void BLAS::Build(ID3D12Device10* device, const std::vector<D3D12_RAYTRACING_GEOMETRY_DESC>& geometries)
 {
     D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_INPUTS inputs{};
     inputs.Type = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_TYPE_BOTTOM_LEVEL;

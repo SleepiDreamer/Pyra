@@ -13,7 +13,7 @@ public:
     BLAS(const BLAS&) = delete;
     BLAS& operator=(const BLAS&) = delete;
 
-    void Build(ID3D12Device5* device, const std::vector<D3D12_RAYTRACING_GEOMETRY_DESC>& geometries);
+    void Build(ID3D12Device10* device, const std::vector<D3D12_RAYTRACING_GEOMETRY_DESC>& geometries);
     [[nodiscard]] ID3D12Resource* GetResult() const { return m_result.resource; }
 
 private:

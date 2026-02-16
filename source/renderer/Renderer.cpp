@@ -6,6 +6,8 @@
 #include "GPUAllocator.h"
 #include "UploadContext.h"
 #include "SwapChain.h"
+#include "ShaderCompiler.h"
+#include "RTPipeline.h"
 #include "CommonDX.h"
 
 #include <iostream>
@@ -27,9 +29,13 @@ Renderer::Renderer(Window& window)
 
 	m_swapChain = std::make_unique<SwapChain>(window, m_device->GetDevice(), m_device->GetAdapter(), m_commandQueue.get());
 
-	m_model = std::make_unique<Model>(m_device->GetDevice(),*m_commandQueue, *m_allocator, "assets/models/DamagedHelmet.glb");
+	m_model = std::make_unique<Model>(m_device->GetDevice(),*m_commandQueue, *m_allocator, "assets/models/Triangle.gltf");
 
 	m_tlas = std::make_unique<TLAS>(m_device->GetDevice(), *m_allocator, *m_commandQueue);
+
+	m_shaderCompiler = std::make_unique<ShaderCompiler>();
+
+	m_rtPipeline = std::make_unique<RTPipeline>(m_device->GetDevice(), *m_shaderCompiler, "shaders/raytracing.slang");
 }
 
 Renderer::~Renderer()

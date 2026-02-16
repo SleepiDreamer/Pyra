@@ -2,14 +2,14 @@
 #include "GPUAllocator.h"
 #include "CommandQueue.h"
 
-TLAS::TLAS(ID3D12Device5* device, GPUAllocator& allocator, CommandQueue& commandQueue)
+TLAS::TLAS(ID3D12Device10* device, GPUAllocator& allocator, CommandQueue& commandQueue)
 	: m_allocator(allocator), m_commandQueue(commandQueue)
 {
 }
 
 TLAS::~TLAS() = default;
 
-void TLAS::Build(ID3D12Device5* device, const std::vector<D3D12_RAYTRACING_INSTANCE_DESC>& instances)
+void TLAS::Build(ID3D12Device10* device, const std::vector<D3D12_RAYTRACING_INSTANCE_DESC>& instances)
 {
     uint64_t instancesSize = instances.size() * sizeof(D3D12_RAYTRACING_INSTANCE_DESC);
     m_tlasInstances = m_allocator.CreateBuffer(

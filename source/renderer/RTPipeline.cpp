@@ -31,8 +31,8 @@ void RTPipeline::CreateRootSignature(ID3D12Device10* device)
 
     CD3DX12_ROOT_PARAMETER1 params[3] = {};
     params[0].InitAsDescriptorTable(1, &uavRange);
-    params[1].InitAsShaderResourceView(0);  // t0: TLAS (raw, so root descriptor is fine)
-    params[2].InitAsConstantBufferView(0);  // b0: constants
+    params[1].InitAsShaderResourceView(0); // t0: TLAS
+    params[2].InitAsConstantBufferView(0); // b0: constants
 
     CD3DX12_VERSIONED_ROOT_SIGNATURE_DESC desc;
     desc.Init_1_1(_countof(params), params, 0, nullptr,
@@ -46,7 +46,7 @@ void RTPipeline::CreateRootSignature(ID3D12Device10* device)
     if (FAILED(hr))
     {
         if (errorBlob)
-            std::cerr << static_cast<const char*>(errorBlob->GetBufferPointer()) << std::endl;
+            std::cerr << static_cast<const char*>(errorBlob->GetBufferPointer()) << "\n";
         ThrowIfFailed(hr);
     }
 

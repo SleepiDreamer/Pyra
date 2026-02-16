@@ -21,15 +21,8 @@ GPUAllocator::~GPUAllocator()
 GPUBuffer GPUAllocator::CreateBuffer(const uint64_t size, const D3D12_RESOURCE_STATES initialState,
 									 const D3D12_RESOURCE_FLAGS flags, const D3D12_HEAP_TYPE heapType, const char* name) const
 {
-    D3D12_RESOURCE_DESC resourceDesc{};
-    resourceDesc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
+    D3D12_RESOURCE_DESC resourceDesc = BUFFER_RESOURCE;
     resourceDesc.Width = size;
-    resourceDesc.Height = 1;
-    resourceDesc.DepthOrArraySize = 1;
-    resourceDesc.MipLevels = 1;
-    resourceDesc.Format = DXGI_FORMAT_UNKNOWN;
-    resourceDesc.SampleDesc.Count = 1;
-    resourceDesc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
     resourceDesc.Flags = flags;
 
     D3D12MA::ALLOCATION_DESC allocDesc{};
@@ -47,5 +40,32 @@ GPUBuffer GPUAllocator::CreateBuffer(const uint64_t size, const D3D12_RESOURCE_S
         IID_PPV_ARGS(&buffer.resource)));
     buffer.resource->SetName(ToWideString(name).c_str());
 
+    return buffer;
+}
+
+// GPUAllocator.cpp
+GPUBuffer GPUAllocator::CreateTexture(const uint32_t width, const uint32_t height, DXGI_FORMAT format,
+    D3D12_RESOURCE_STATES initialState, const D3D12_RESOURCE_FLAGS flags, const wchar_t* name) const
+{
+    D3D12_RESOURCE_DESC resourceDesc = TEXTURE_RESOURCE;
+    resourceDesc.Width = width;
+    resourceDesc.Height = height;
+    resourceDesc.Flags = flags;
+
+    D3D12MA::ALLOCATION_DESC allocDesc{};
+    allocDesc.HeapType = D3D12_HEAP_TYPE_DEFAULT;
+
+    GPUBuffer buffer{};
+    buffer.size = 0;
+
+    ThrowIfFailed(m_allocator->CreateResource(
+        &allocDesc,
+        &resourceDesc,
+        initialState,
+        nullptr,
+        &buffer.allocation,
+        IID_PPV_ARGS(&buffer.resource)));
+
+    buffer.resource->SetName(name);
     return buffer;
 }

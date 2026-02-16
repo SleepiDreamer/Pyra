@@ -15,6 +15,7 @@ class DescriptorHeap;
 class CommandList;
 class UploadContext;
 class GPUAllocator;
+class OutputTexture;
 class ShaderCompiler;
 class RTPipeline;
 
@@ -40,5 +41,7 @@ private:
 
 	std::unique_ptr<Model> m_model;
 	std::unique_ptr<TLAS> m_tlas;
+
+	std::unique_ptr<OutputTexture> m_rtOutputTexture;
 };
 

@@ -6,6 +6,7 @@
 #include "GPUAllocator.h"
 #include "UploadContext.h"
 #include "SwapChain.h"
+#include "OutputTexture.h"
 #include "ShaderCompiler.h"
 #include "RTPipeline.h"
 #include "CommonDX.h"
@@ -33,6 +34,8 @@ Renderer::Renderer(Window& window)
 
 	m_tlas = std::make_unique<TLAS>(m_device->GetDevice(), *m_allocator, *m_commandQueue);
 
+	m_rtOutputTexture = std::make_unique<OutputTexture>(m_device->GetDevice(), *m_allocator, *m_descriptorHeap, DXGI_FORMAT_R16G16B16A16_FLOAT, L"RT Output Texture");
+
 	m_shaderCompiler = std::make_unique<ShaderCompiler>();
 
 	m_rtPipeline = std::make_unique<RTPipeline>(m_device->GetDevice(), *m_shaderCompiler, "shaders/raytracing.slang");
@@ -55,6 +58,8 @@ void Renderer::Render()
 	auto commandList = m_commandQueue->GetCommandList();
 	auto commandQueue = m_commandQueue->GetQueue();
 
+	m_rtPipeline->CheckHotReload(m_device->GetDevice(), *m_commandQueue);
+
 	// Begin frame
 	{
 		TransitionResource(commandList.Get(), backBuffer, D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET);
@@ -64,6 +69,14 @@ void Renderer::Render()
 	{
 		constexpr float clearColor[] = { 0.0f, 0.2f, 0.4f, 1.0f };
 		commandList->ClearRenderTargetView(m_swapChain->GetCurrentBackBufferRtv().cpuHandle, clearColor, 0, nullptr);
+
+		commandList->SetPipelineState1(m_rtPipeline->GetPSO());
+		commandList->SetComputeRootSignature(m_rtPipeline->GetRootSignature());
+
+		auto dispatchDesc = m_rtPipeline->GetDispatchRaysDesc();
+		dispatchDesc.Width = m_swapChain->GetViewport().Width;
+		dispatchDesc.Height = m_swapChain->GetViewport().Height;
+		commandList->DispatchRays(&dispatchDesc);
 	}
 
 	// End frame

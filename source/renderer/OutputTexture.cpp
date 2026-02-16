@@ -1,0 +1,48 @@
+#include "OutputTexture.h"
+#include "GPUAllocator.h"
+
+OutputTexture::OutputTexture(ID3D12Device* device, GPUAllocator& allocator, DescriptorHeap& descriptorHeap, const DXGI_FORMAT format, std::wstring name)
+	: m_allocator(allocator), m_descriptorHeap(descriptorHeap), m_format(format), m_name(std::move(name))
+{
+}
+
+OutputTexture::~OutputTexture()
+{
+	if (m_initialized)
+    {
+        m_descriptorHeap.Free(m_uav);
+        m_descriptorHeap.Free(m_srv);
+	}
+}
+
+void OutputTexture::Create(ID3D12Device* device, const uint32_t width, const uint32_t height)
+{
+    if (m_initialized)
+    {
+        m_descriptorHeap.Free(m_uav);
+        m_descriptorHeap.Free(m_srv);
+    }
+
+	m_resource = m_allocator.CreateTexture(width, height, m_format, D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS, m_name.c_str());
+
+    m_uav = m_descriptorHeap.Allocate();
+    m_srv = m_descriptorHeap.Allocate();
+
+    D3D12_UNORDERED_ACCESS_VIEW_DESC uavDesc = {};
+	uavDesc.Format = m_format;
+	uavDesc.ViewDimension = D3D12_UAV_DIMENSION_TEXTURE2D;
+
+	D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
+	srvDesc.Format = m_format;
+	srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+
+    device->CreateUnorderedAccessView(m_resource.resource, nullptr, &uavDesc, m_uav.cpuHandle);
+    device->CreateShaderResourceView(m_resource.resource, &srvDesc, m_srv.cpuHandle);
+
+    m_initialized = true;
+}
+
+void OutputTexture::Resize(ID3D12Device* device, const uint32_t width, const uint32_t height)
+{
+    Create(device, width, height);
+}

@@ -63,6 +63,9 @@
     <ClInclude Include="external\D3D12MA\D3D12MemAlloc.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="include\renderer\BLAS.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\main.cpp">
@@ -105,6 +108,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="external\D3D12MA\D3D12MemAlloc.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\renderer\BLAS.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

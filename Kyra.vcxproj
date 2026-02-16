@@ -36,9 +36,11 @@
     <ClInclude Include="include\renderer\SwapChain.h" />
     <ClInclude Include="include\renderer\RTPipeline.h" />
     <ClInclude Include="include\renderer\UploadContext.h" />
+    <ClInclude Include="include\renderer\Model.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="external\D3D12MA\D3D12MemAlloc.cpp" />
+    <ClCompile Include="source\renderer\Model.cpp" />
     <ClCompile Include="source\renderer\BLAS.cpp" />
     <ClCompile Include="source\renderer\GPUAllocator.cpp" />
     <ClCompile Include="source\renderer\TLAS.cpp" />

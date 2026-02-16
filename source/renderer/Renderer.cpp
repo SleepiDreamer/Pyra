@@ -26,6 +26,8 @@ Renderer::Renderer(Window& window)
 	m_uploadContext = std::make_unique<UploadContext>(*m_allocator, m_device->GetDevice());
 
 	m_swapChain = std::make_unique<SwapChain>(window, m_device->GetDevice(), m_device->GetAdapter(), m_commandQueue.get());
+
+	m_tlas = std::make_unique<TLAS>(m_device->GetDevice(), *m_allocator, *m_commandQueue);
 }
 
 Renderer::~Renderer()

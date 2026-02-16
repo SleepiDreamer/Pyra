@@ -3,6 +3,9 @@
 #include <d3dx12.h>
 #include <memory>
 
+// TODO: remove
+#include "TLAS.h"
+
 class Window;
 class Device;
 class CommandQueue;
@@ -29,5 +32,7 @@ private:
 	std::unique_ptr<GPUAllocator> m_allocator = nullptr;
 	std::unique_ptr<UploadContext> m_uploadContext = nullptr;
 	std::unique_ptr<SwapChain> m_swapChain = nullptr;
+
+	std::unique_ptr<TLAS> m_tlas;
 };
 

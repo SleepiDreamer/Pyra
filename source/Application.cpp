@@ -2,6 +2,7 @@
 #include "Window.h"
 #include "Renderer.h"
 
+#define GLFW_INCLUDE_NONE
 #include <glfw3.h>
 
 Application::Application()

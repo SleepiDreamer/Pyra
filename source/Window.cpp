@@ -1,5 +1,6 @@
 #include "Window.h"
 #define GLFW_EXPOSE_NATIVE_WIN32
+#define GLFW_INCLUDE_NONE
 #include <glfw3.h>
 #include <glfw3native.h>
 

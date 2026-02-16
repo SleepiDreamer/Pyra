@@ -27,11 +27,13 @@ Renderer::Renderer(Window& window)
 
 	m_swapChain = std::make_unique<SwapChain>(window, m_device->GetDevice(), m_device->GetAdapter(), m_commandQueue.get());
 
+	m_model = std::make_unique<Model>(m_device->GetDevice(),*m_commandQueue, *m_allocator, "assets/models/DamagedHelmet.glb");
+
 	m_tlas = std::make_unique<TLAS>(m_device->GetDevice(), *m_allocator, *m_commandQueue);
 }
 
 Renderer::~Renderer()
-{
+{ 
 	m_commandQueue->Flush();
 }
 

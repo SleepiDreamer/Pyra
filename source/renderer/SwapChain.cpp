@@ -5,6 +5,7 @@
 #include "Window.h"
 #include "CommonDX.h"
 
+#define GLFW_INCLUDE_NONE
 #include <glfw3.h>
 #include <algorithm>
 
@@ -128,8 +129,8 @@ void SwapChain::ToggleFullscreen()
 			glfwGetMonitorPos(monitors[i], &mx, &my);
 			const GLFWvidmode* mode = glfwGetVideoMode(monitors[i]);
 
-			int overlapX = max(0, min(m_windowedX + m_windowedWidth, mx + mode->width) - max(m_windowedX, mx));
-			int overlapY = max(0, min(m_windowedY + m_windowedHeight, my + mode->height) - max(m_windowedY, my));
+			int overlapX = std::max(0, std::min(m_windowedX + m_windowedWidth, mx + mode->width) - std::max(m_windowedX, mx));
+			int overlapY = std::max(0, std::min(m_windowedY + m_windowedHeight, my + mode->height) - std::max(m_windowedY, my));
 			int overlap = overlapX * overlapY;
 
 			if (overlap > bestOverlap)

@@ -20,6 +20,15 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="external\D3D12MA\D3D12MemAlloc.h" />
+    <ClInclude Include="external\fastgltf\base64.hpp" />
+    <ClInclude Include="external\fastgltf\core.hpp" />
+    <ClInclude Include="external\fastgltf\dxmath_element_traits.hpp" />
+    <ClInclude Include="external\fastgltf\glm_element_traits.hpp" />
+    <ClInclude Include="external\fastgltf\math.hpp" />
+    <ClInclude Include="external\fastgltf\tools.hpp" />
+    <ClInclude Include="external\fastgltf\types.hpp" />
+    <ClInclude Include="external\fastgltf\util.hpp" />
+    <ClInclude Include="external\simdjson\simdjson.h" />
     <ClInclude Include="include\renderer\BLAS.h" />
     <ClInclude Include="include\renderer\GPUBuffer.h" />
     <ClInclude Include="include\renderer\GPUAllocator.h" />
@@ -37,9 +46,18 @@
     <ClInclude Include="include\renderer\RTPipeline.h" />
     <ClInclude Include="include\renderer\UploadContext.h" />
     <ClInclude Include="include\renderer\Model.h" />
+    <ClInclude Include="include\renderer\Scene.h" />
+    <ClInclude Include="include\renderer\Mesh.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="external\D3D12MA\D3D12MemAlloc.cpp" />
+    <ClCompile Include="external\fastgltf\base64.cpp" />
+    <ClCompile Include="external\fastgltf\fastgltf.cpp" />
+    <ClCompile Include="external\fastgltf\fastgltf.ixx" />
+    <ClCompile Include="external\fastgltf\io.cpp" />
+    <ClCompile Include="external\simdjson\simdjson.cpp" />
+    <ClCompile Include="source\renderer\Mesh.cpp" />
+    <ClCompile Include="source\renderer\Scene.cpp" />
     <ClCompile Include="source\renderer\Model.cpp" />
     <ClCompile Include="source\renderer\BLAS.cpp" />
     <ClCompile Include="source\renderer\GPUAllocator.cpp" />
@@ -58,6 +76,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\raytracing.slang" />
+  </ItemGroup>
+  <ItemGroup>
+    <Natvis Include="external\glm\glm.natvis" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>18.0</VCProjectVersion>
@@ -146,7 +167,8 @@
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>$(ProjectDir)external;$(ProjectDir)external\GLFW;$(ProjectDir)external\D3D12;$(ProjectDir)external\D3D12MA;$(ProjectDir)include;$(ProjectDir)include\renderer;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)external;$(ProjectDir)external\GLFW;$(ProjectDir)external\D3D12;$(ProjectDir)external\D3D12MA;$(ProjectDir)external\simdjson;$(ProjectDir)include;$(ProjectDir)include\renderer;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalOptions>/DNOMINMAX %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>

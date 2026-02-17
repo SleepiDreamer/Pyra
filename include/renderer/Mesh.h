@@ -40,9 +40,10 @@ public:
     [[nodiscard]] uint32_t GetIndexCount() const { return m_indexCount; }
     [[nodiscard]] D3D12_VERTEX_BUFFER_VIEW GetVertexBufferView() const;
     [[nodiscard]] D3D12_INDEX_BUFFER_VIEW GetIndexBufferView() const;
+	[[nodiscard]] D3D12_RAYTRACING_INSTANCE_DESC GetInstanceDesc() const;
 
-    int32_t materialIndex = -1;
-    DirectX::XMFLOAT4X4 transform;
+    int32_t m_materialIndex = -1;
+    DirectX::XMFLOAT4X4 m_transform;
 
 private:
     GPUBuffer m_vertexBuffer;

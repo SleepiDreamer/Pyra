@@ -7,52 +7,53 @@
 #include <d3dx12.h>
 #include <iostream>
 
-RTPipeline::RTPipeline(ID3D12Device10* device, ShaderCompiler& compiler,
-    const std::string& shaderPath)
+using namespace Microsoft::WRL;
+
+RTPipeline::RTPipeline(ID3D12Device10* device, ID3D12RootSignature* rootSignature, ShaderCompiler& compiler, const std::string& shaderPath)
+	: m_rootSignature(rootSignature)
 {
-	std::vector<std::string> entryPoints = {}; // entry points found automatically with attributes
+	std::vector<std::string> entryPoints = {};
     m_shaderLibrary = std::make_unique<ShaderLibrary>(compiler, shaderPath, entryPoints);
     if (!m_shaderLibrary->IsValid())
     {
 	    throw std::runtime_error("Failed to compile RT shaders: " + shaderPath);
     }
 
-    CreateRootSignature(device);
     CreatePSO(device);
     CreateShaderTables(device);
 }
 
 RTPipeline::~RTPipeline() = default;
 
-void RTPipeline::CreateRootSignature(ID3D12Device10* device)
-{
-    CD3DX12_DESCRIPTOR_RANGE1 uavRange;
-    uavRange.Init(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 1, 0); // u0
-
-    CD3DX12_ROOT_PARAMETER1 params[3] = {};
-    params[0].InitAsDescriptorTable(1, &uavRange);
-    params[1].InitAsShaderResourceView(0); // t0: TLAS
-    params[2].InitAsConstantBufferView(0); // b0: constants
-
-    CD3DX12_VERSIONED_ROOT_SIGNATURE_DESC desc;
-    desc.Init_1_1(_countof(params), params, 0, nullptr,
-        D3D12_ROOT_SIGNATURE_FLAG_NONE);
-
-    Microsoft::WRL::ComPtr<ID3DBlob> sigBlob;
-    Microsoft::WRL::ComPtr<ID3DBlob> errorBlob;
-    HRESULT hr = D3DX12SerializeVersionedRootSignature(&desc,
-        D3D_ROOT_SIGNATURE_VERSION_1_1, &sigBlob, &errorBlob);
-
-    if (FAILED(hr))
-    {
-        if (errorBlob)
-            std::cerr << static_cast<const char*>(errorBlob->GetBufferPointer()) << "\n";
-        ThrowIfFailed(hr);
-    }
-
-    ThrowIfFailed(device->CreateRootSignature(0, sigBlob->GetBufferPointer(),
-        sigBlob->GetBufferSize(), IID_PPV_ARGS(&m_rootSignature)));
-}
+//void RTPipeline::CreateRootSignature(ID3D12Device10* device)
+//{
+//    CD3DX12_DESCRIPTOR_RANGE1 uavRange;
+//    uavRange.Init(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 1, 0); // u0
+//
+//    CD3DX12_ROOT_PARAMETER1 params[3] = {};
+//    params[0].InitAsDescriptorTable(1, &uavRange);
+//    params[1].InitAsShaderResourceView(0); // t0: TLAS
+//    params[2].InitAsConstantBufferView(0); // b0: constants
+//
+//    CD3DX12_VERSIONED_ROOT_SIGNATURE_DESC desc;
+//    desc.Init_1_1(_countof(params), params, 0, nullptr,
+//        D3D12_ROOT_SIGNATURE_FLAG_NONE);
+//
+//    Microsoft::WRL::ComPtr<ID3DBlob> sigBlob;
+//    Microsoft::WRL::ComPtr<ID3DBlob> errorBlob;
+//    HRESULT hr = D3DX12SerializeVersionedRootSignature(&desc,
+//        D3D_ROOT_SIGNATURE_VERSION_1_1, &sigBlob, &errorBlob);
+//
+//    if (FAILED(hr))
+//    {
+//        if (errorBlob)
+//            std::cerr << static_cast<const char*>(errorBlob->GetBufferPointer()) << "\n";
+//        ThrowIfFailed(hr);
+//    }
+//
+//    ThrowIfFailed(device->CreateRootSignature(0, sigBlob->GetBufferPointer(),
+//        sigBlob->GetBufferSize(), IID_PPV_ARGS(&m_rootSignature)));
+//}
 
 void RTPipeline::CreatePSO(ID3D12Device10* device)
 {
@@ -75,7 +76,7 @@ void RTPipeline::CreatePSO(ID3D12Device10* device)
     );
 
     auto globalRootSig = psoDesc.CreateSubobject<CD3DX12_GLOBAL_ROOT_SIGNATURE_SUBOBJECT>();
-    globalRootSig->SetRootSignature(m_rootSignature.Get());
+    globalRootSig->SetRootSignature(m_rootSignature);
 
     auto pipelineConfig = psoDesc.CreateSubobject<CD3DX12_RAYTRACING_PIPELINE_CONFIG_SUBOBJECT>();
     pipelineConfig->Config(2); // max recursion depth

@@ -5,40 +5,26 @@
 
 Mesh::Mesh() = default;
 
-Mesh::~Mesh()
-{
-    if (m_vertexBuffer.allocation)
-        m_vertexBuffer.allocation->Release();
-    if (m_indexBuffer.allocation)
-        m_indexBuffer.allocation->Release();
-}
+Mesh::~Mesh() = default;
 
 Mesh::Mesh(Mesh&& other) noexcept
-    : materialIndex(other.materialIndex), transform(other.transform), m_vertexBuffer(other.m_vertexBuffer)
-    , m_indexBuffer(other.m_indexBuffer), m_vertexCount(other.m_vertexCount), m_indexCount(other.m_indexCount)
+    : m_materialIndex(other.m_materialIndex), m_transform(other.m_transform), m_vertexBuffer(std::move(other.m_vertexBuffer))
+    , m_indexBuffer(std::move(other.m_indexBuffer)), m_vertexCount(other.m_vertexCount), m_indexCount(other.m_indexCount)
+	, m_blas(std::move(other.m_blas))
 {
-    other.m_vertexBuffer = {};
-    other.m_indexBuffer = {};
 }
 
 Mesh& Mesh::operator=(Mesh&& other) noexcept
 {
     if (this != &other)
     {
-        if (m_vertexBuffer.allocation)
-            m_vertexBuffer.allocation->Release();
-        if (m_indexBuffer.allocation)
-            m_indexBuffer.allocation->Release();
-
-        m_vertexBuffer = other.m_vertexBuffer;
-        m_indexBuffer = other.m_indexBuffer;
+        m_vertexBuffer = std::move(other.m_vertexBuffer);
+        m_indexBuffer = std::move(other.m_indexBuffer);
         m_vertexCount = other.m_vertexCount;
         m_indexCount = other.m_indexCount;
-        materialIndex = other.materialIndex;
-        transform = other.transform;
-
-        other.m_vertexBuffer = {};
-        other.m_indexBuffer = {};
+        m_materialIndex = other.m_materialIndex;
+        m_transform = other.m_transform;
+		m_blas = std::move(other.m_blas);
     }
     return *this;
 }
@@ -116,4 +102,17 @@ D3D12_INDEX_BUFFER_VIEW Mesh::GetIndexBufferView() const
         .SizeInBytes = static_cast<UINT>(m_indexBuffer.size),
         .Format = DXGI_FORMAT_R32_UINT
     };
+}
+
+// TODO: implement transform, instanceID, hit group index
+D3D12_RAYTRACING_INSTANCE_DESC Mesh::GetInstanceDesc() const
+{
+    D3D12_RAYTRACING_INSTANCE_DESC desc = {};
+	desc.AccelerationStructure = m_blas->GetResult()->GetGPUVirtualAddress();
+    desc.Flags = D3D12_RAYTRACING_INSTANCE_FLAG_NONE;
+    desc.InstanceMask = 0xFF;
+    desc.InstanceContributionToHitGroupIndex = 0;
+    desc.InstanceID = 0;
+
+    return desc;
 }

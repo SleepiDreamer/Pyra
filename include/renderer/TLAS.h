@@ -15,6 +15,8 @@ public:
 
 	void Build(ID3D12Device10* device, const std::vector<D3D12_RAYTRACING_INSTANCE_DESC>& instances);
 	void Update(const std::vector<D3D12_RAYTRACING_INSTANCE_DESC>& instances) const;
+
+	[[nodiscard]] const GPUBuffer& GetResource() const { return m_result; }
 private:
 	GPUAllocator& m_allocator;
 	CommandQueue& m_commandQueue;

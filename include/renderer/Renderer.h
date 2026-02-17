@@ -17,6 +17,7 @@ class UploadContext;
 class GPUAllocator;
 class OutputTexture;
 class ShaderCompiler;
+class RootSignature;
 class RTPipeline;
 
 class Renderer
@@ -24,7 +25,7 @@ class Renderer
 public:
 	explicit Renderer(Window& window);
 	~Renderer();
-	void Render();
+	void Render() const;
 
 	void ToggleFullscreen() const;
 
@@ -37,6 +38,7 @@ private:
 	std::unique_ptr<UploadContext> m_uploadContext = nullptr;
 	std::unique_ptr<SwapChain> m_swapChain = nullptr;
 	std::unique_ptr<ShaderCompiler> m_shaderCompiler;
+	std::unique_ptr<RootSignature> m_rootSignature;
 	std::unique_ptr<RTPipeline> m_rtPipeline;
 
 	std::unique_ptr<Model> m_model;

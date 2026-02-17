@@ -48,6 +48,7 @@ GPUBuffer GPUAllocator::CreateTexture(const uint32_t width, const uint32_t heigh
     D3D12_RESOURCE_STATES initialState, const D3D12_RESOURCE_FLAGS flags, const wchar_t* name) const
 {
     D3D12_RESOURCE_DESC resourceDesc = TEXTURE_RESOURCE;
+    resourceDesc.Format = format;
     resourceDesc.Width = width;
     resourceDesc.Height = height;
     resourceDesc.Flags = flags;

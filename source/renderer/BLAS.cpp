@@ -7,13 +7,7 @@ BLAS::BLAS(GPUAllocator& allocator, CommandQueue& commandQueue)
 {
 }
 
-BLAS::~BLAS()
-{
-	if (m_result.allocation)
-		m_result.allocation->Release();
-    if (m_scratch.allocation)
-		m_scratch.allocation->Release();
-}
+BLAS::~BLAS() = default;
 
 void BLAS::Build(ID3D12Device10* device, const std::vector<D3D12_RAYTRACING_GEOMETRY_DESC>& geometries)
 {

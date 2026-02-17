@@ -16,21 +16,21 @@ UploadContext::~UploadContext()
 
 void UploadContext::Upload(const GPUBuffer& dest, const void* data, const uint64_t size)
 {
-    const auto staging = std::make_shared<GPUBuffer>(
-			m_allocator.CreateBuffer(size, D3D12_RESOURCE_STATE_GENERIC_READ,
-			D3D12_RESOURCE_FLAG_NONE, D3D12_HEAP_TYPE_UPLOAD, "Upload Staging Buffer"));
+    GPUBuffer staging = m_allocator.CreateBuffer(
+        size, D3D12_RESOURCE_STATE_GENERIC_READ,
+        D3D12_RESOURCE_FLAG_NONE, D3D12_HEAP_TYPE_UPLOAD, "Upload Staging Buffer");
 
     void* mapped = nullptr;
     D3D12_RANGE readRange{ 0, 0 };
-    ThrowIfFailed(staging->resource->Map(0, &readRange, &mapped));
+    ThrowIfFailed(staging.resource->Map(0, &readRange, &mapped));
     memcpy(mapped, data, size);
-    staging->resource->Unmap(0, nullptr);
+    staging.resource->Unmap(0, nullptr);
 
     auto cmdList = m_queue->GetCommandList();
-    cmdList->CopyBufferRegion(dest.resource, 0, staging->resource, 0, size);
+    cmdList->CopyBufferRegion(dest.resource, 0, staging.resource, 0, size);
     m_queue->ExecuteCommandList(cmdList);
 
-    m_uploads.push_back(staging);
+    m_uploads.push_back(std::move(staging));
 }
 
 void UploadContext::Flush()

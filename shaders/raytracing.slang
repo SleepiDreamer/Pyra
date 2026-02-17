@@ -12,8 +12,8 @@ void RayGen()
     uint2 idx = DispatchRaysIndex().xy;
 
     RayDesc ray;
-    ray.Origin = float3(0.0, 0.0, 0.0);
-    ray.Direction = float3(0.0, 0.0, 1.0);
+    ray.Origin = float3(0.0, 0.0, -1.0);
+    ray.Direction = normalize(float3(0.0, 0.0, 1.0));
     ray.TMin = 0.0;
     ray.TMax = 1000.0;
 
@@ -22,6 +22,7 @@ void RayGen()
 
     TraceRay(sceneBVH, RAY_FLAG_NONE, 0xFF, 0, 0, 0, ray, payload);
 
+    payload.color = float3(1.0, 0.0, 0.0);
     outputTexture[idx] = float4(payload.color, 1.0);
 }
 

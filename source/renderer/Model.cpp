@@ -171,10 +171,10 @@ void Model::LoadMesh(ID3D12Device10* device,
         }
 
         Mesh mesh;
-        mesh.materialIndex = primitive.materialIndex.has_value()
+        mesh.m_materialIndex = primitive.materialIndex.has_value()
             ? static_cast<int32_t>(primitive.materialIndex.value()) : -1;
 
-        XMStoreFloat4x4(&mesh.transform, transform);
+        XMStoreFloat4x4(&mesh.m_transform, transform);
 
         std::string meshName = m_name + "_" + std::string(gltfMesh.name) +
             "_prim" + std::to_string(m_meshes.size());

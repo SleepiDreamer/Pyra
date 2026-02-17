@@ -8,7 +8,7 @@ class CommandQueue;
 class RTPipeline
 {
 public:
-    RTPipeline(ID3D12Device10* device, ShaderCompiler& compiler, const std::string& shaderPath);
+    RTPipeline(ID3D12Device10* device, ID3D12RootSignature* rootSignature, ShaderCompiler& compiler, const std::string& shaderPath);
     ~RTPipeline();
 
     void Rebuild(ID3D12Device10* device);
@@ -16,15 +16,13 @@ public:
     bool CheckHotReload(ID3D12Device10* device, CommandQueue& commandQueue);
     D3D12_DISPATCH_RAYS_DESC GetDispatchRaysDesc() const;
     ID3D12StateObject* GetPSO() const { return m_pso.Get(); }
-    ID3D12RootSignature* GetRootSignature() const { return m_rootSignature.Get(); }
 
 private:
-    void CreateRootSignature(ID3D12Device10* device);
     void CreatePSO(ID3D12Device10* device);
     void CreateShaderTables(ID3D12Device10* device);
 
     Microsoft::WRL::ComPtr<ID3D12StateObject> m_pso;
-    Microsoft::WRL::ComPtr<ID3D12RootSignature> m_rootSignature;
+    ID3D12RootSignature* m_rootSignature;
     Microsoft::WRL::ComPtr<ID3D12RootSignature> m_localRootSignature;
 
     Microsoft::WRL::ComPtr<ID3D12Resource> m_raygenTable;

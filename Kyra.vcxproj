@@ -50,6 +50,7 @@
     <ClInclude Include="include\renderer\ShaderCompiler.h" />
     <ClInclude Include="include\renderer\ShaderLibrary.h" />
     <ClInclude Include="include\renderer\OutputTexture.h" />
+    <ClInclude Include="include\renderer\RootSignature.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="external\D3D12MA\D3D12MemAlloc.cpp" />
@@ -58,6 +59,7 @@
     <ClCompile Include="external\fastgltf\fastgltf.ixx" />
     <ClCompile Include="external\fastgltf\io.cpp" />
     <ClCompile Include="external\simdjson\simdjson.cpp" />
+    <ClCompile Include="source\renderer\RootSignature.cpp" />
     <ClCompile Include="source\renderer\OutputTexture.cpp" />
     <ClCompile Include="source\renderer\ShaderLibrary.cpp" />
     <ClCompile Include="source\renderer\ShaderCompiler.cpp" />

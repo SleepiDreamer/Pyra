@@ -1,6 +1,6 @@
 #include "RTPipeline.h"
 #include "ShaderCompiler.h"
-#include "ShaderLibrary.h"
+#include "Shader.h"
 #include "CommandQueue.h"
 #include "HelpersDX.h"
 
@@ -13,7 +13,7 @@ RTPipeline::RTPipeline(ID3D12Device10* device, ID3D12RootSignature* rootSignatur
 	: m_rootSignature(rootSignature)
 {
 	std::vector<std::string> entryPoints = {};
-    m_shaderLibrary = std::make_unique<ShaderLibrary>(compiler, shaderPath, entryPoints);
+    m_shaderLibrary = std::make_unique<Shader>(compiler, shaderPath, entryPoints);
     if (!m_shaderLibrary->IsValid())
     {
 	    throw std::runtime_error("Failed to compile RT shaders: " + shaderPath);
@@ -24,36 +24,6 @@ RTPipeline::RTPipeline(ID3D12Device10* device, ID3D12RootSignature* rootSignatur
 }
 
 RTPipeline::~RTPipeline() = default;
-
-//void RTPipeline::CreateRootSignature(ID3D12Device10* device)
-//{
-//    CD3DX12_DESCRIPTOR_RANGE1 uavRange;
-//    uavRange.Init(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 1, 0); // u0
-//
-//    CD3DX12_ROOT_PARAMETER1 params[3] = {};
-//    params[0].InitAsDescriptorTable(1, &uavRange);
-//    params[1].InitAsShaderResourceView(0); // t0: TLAS
-//    params[2].InitAsConstantBufferView(0); // b0: constants
-//
-//    CD3DX12_VERSIONED_ROOT_SIGNATURE_DESC desc;
-//    desc.Init_1_1(_countof(params), params, 0, nullptr,
-//        D3D12_ROOT_SIGNATURE_FLAG_NONE);
-//
-//    Microsoft::WRL::ComPtr<ID3DBlob> sigBlob;
-//    Microsoft::WRL::ComPtr<ID3DBlob> errorBlob;
-//    HRESULT hr = D3DX12SerializeVersionedRootSignature(&desc,
-//        D3D_ROOT_SIGNATURE_VERSION_1_1, &sigBlob, &errorBlob);
-//
-//    if (FAILED(hr))
-//    {
-//        if (errorBlob)
-//            std::cerr << static_cast<const char*>(errorBlob->GetBufferPointer()) << "\n";
-//        ThrowIfFailed(hr);
-//    }
-//
-//    ThrowIfFailed(device->CreateRootSignature(0, sigBlob->GetBufferPointer(),
-//        sigBlob->GetBufferSize(), IID_PPV_ARGS(&m_rootSignature)));
-//}
 
 void RTPipeline::CreatePSO(ID3D12Device10* device)
 {
@@ -138,10 +108,13 @@ void RTPipeline::CreateShaderTables(ID3D12Device10* device)
         ThrowIfFailed(device->CreateCommittedResource(&heapProps, D3D12_HEAP_FLAG_NONE,
 					  &bufDesc, D3D12_RESOURCE_STATE_GENERIC_READ, nullptr, IID_PPV_ARGS(&m_hitGroupTable)));
 
+        auto* id = props->GetShaderIdentifier(L"HitGroup");
+        assert(id != nullptr);
+
         void* mapped = nullptr;
         m_hitGroupTable->Map(0, nullptr, &mapped);
         auto* dst = static_cast<uint8_t*>(mapped);
-        memcpy(dst, props->GetShaderIdentifier(L"HitGroup"), shaderIdSize);
+        memcpy(dst, id, shaderIdSize);
         m_hitGroupTable->Unmap(0, nullptr);
     }
 }
@@ -194,7 +167,7 @@ D3D12_DISPATCH_RAYS_DESC RTPipeline::GetDispatchRaysDesc() const
     desc.MissShaderTable.StrideInBytes = m_missRecordSize;
 
     desc.HitGroupTable.StartAddress = m_hitGroupTable->GetGPUVirtualAddress();
-    desc.HitGroupTable.SizeInBytes = m_hitGroupCount * m_hitGroupRecordSize;
+    desc.HitGroupTable.SizeInBytes = m_hitGroupRecordSize * m_hitGroupCount;
     desc.HitGroupTable.StrideInBytes = m_hitGroupRecordSize;
 
     desc.Width = 0;

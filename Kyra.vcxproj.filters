@@ -102,7 +102,7 @@
     <ClInclude Include="include\renderer\ShaderCompiler.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\renderer\ShaderLibrary.h">
+    <ClInclude Include="include\renderer\Shader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\renderer\OutputTexture.h">
@@ -179,7 +179,7 @@
     <ClCompile Include="external\simdjson\simdjson.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="source\renderer\ShaderLibrary.cpp">
+    <ClCompile Include="source\renderer\Shader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="source\renderer\ShaderCompiler.cpp">

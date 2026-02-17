@@ -50,6 +50,7 @@ void TLAS::Build(ID3D12Device10* device, const std::vector<D3D12_RAYTRACING_INST
     commandList->ResourceBarrier(1, &barrier);
 
     m_commandQueue.ExecuteCommandList(commandList);
+    m_commandQueue.Flush();
 }
 
 void TLAS::Update(const std::vector<D3D12_RAYTRACING_INSTANCE_DESC>& instances) const

@@ -113,6 +113,9 @@ D3D12_RAYTRACING_INSTANCE_DESC Mesh::GetInstanceDesc() const
     desc.InstanceMask = 0xFF;
     desc.InstanceContributionToHitGroupIndex = 0;
     desc.InstanceID = 0;
+	desc.Transform[0][0] = 1.0f;
+	desc.Transform[1][1] = 1.0f;
+	desc.Transform[2][2] = 1.0f;
 
     return desc;
 }

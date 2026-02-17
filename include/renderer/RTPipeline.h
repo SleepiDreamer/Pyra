@@ -2,7 +2,7 @@
 #include "CommonDX.h"
 
 class ShaderCompiler;
-class ShaderLibrary;
+class Shader;
 class CommandQueue;
 
 class RTPipeline
@@ -34,5 +34,5 @@ private:
     UINT m_hitGroupRecordSize = 0;
     UINT m_hitGroupCount = 0;
 
-    std::unique_ptr<ShaderLibrary> m_shaderLibrary;
+    std::unique_ptr<Shader> m_shaderLibrary;
 };

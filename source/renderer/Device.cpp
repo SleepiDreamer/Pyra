@@ -28,7 +28,7 @@ void Device::EnableDebugLayer()
     ThrowIfFailed(D3D12GetDebugInterface(IID_PPV_ARGS(&debugInterface)));
     debugInterface->EnableDebugLayer();
 
-#if 0 // GPU-based validation
+#if 1 // GPU-based validation
     ComPtr<ID3D12Debug1> debug1;
     if (SUCCEEDED(debugInterface.As(&debug1)))
     {

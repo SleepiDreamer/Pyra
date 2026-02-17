@@ -48,7 +48,7 @@
     <ClInclude Include="include\renderer\Scene.h" />
     <ClInclude Include="include\renderer\Mesh.h" />
     <ClInclude Include="include\renderer\ShaderCompiler.h" />
-    <ClInclude Include="include\renderer\ShaderLibrary.h" />
+    <ClInclude Include="include\renderer\Shader.h" />
     <ClInclude Include="include\renderer\OutputTexture.h" />
     <ClInclude Include="include\renderer\RootSignature.h" />
   </ItemGroup>
@@ -61,7 +61,7 @@
     <ClCompile Include="external\simdjson\simdjson.cpp" />
     <ClCompile Include="source\renderer\RootSignature.cpp" />
     <ClCompile Include="source\renderer\OutputTexture.cpp" />
-    <ClCompile Include="source\renderer\ShaderLibrary.cpp" />
+    <ClCompile Include="source\renderer\Shader.cpp" />
     <ClCompile Include="source\renderer\ShaderCompiler.cpp" />
     <ClCompile Include="source\renderer\Mesh.cpp" />
     <ClCompile Include="source\renderer\Scene.cpp" />

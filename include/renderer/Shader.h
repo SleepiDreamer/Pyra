@@ -6,11 +6,11 @@
 
 class ShaderCompiler;
 
-class ShaderLibrary
+class Shader
 {
 public:
-    ShaderLibrary(ShaderCompiler& compiler, std::string filePath, const std::vector<std::string>& entryPoints);
-    ~ShaderLibrary();
+    Shader(ShaderCompiler& compiler, std::string filePath, const std::vector<std::string>& entryPoints);
+    ~Shader();
 
     bool NeedsReload() const;
     bool Reload();

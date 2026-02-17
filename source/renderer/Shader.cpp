@@ -1,10 +1,10 @@
-#include "ShaderLibrary.h"
+#include "Shader.h"
 #include "ShaderCompiler.h"
 #include "HelpersDX.h"
 
 #include <iostream>
 
-ShaderLibrary::ShaderLibrary(ShaderCompiler& compiler, std::string filePath, const std::vector<std::string>& entryPoints)
+Shader::Shader(ShaderCompiler& compiler, std::string filePath, const std::vector<std::string>& entryPoints)
     : m_compiler(compiler), m_filePath(std::move(filePath)), m_entryPoints(entryPoints)
 {
     if (std::filesystem::exists(m_filePath))
@@ -15,19 +15,21 @@ ShaderLibrary::ShaderLibrary(ShaderCompiler& compiler, std::string filePath, con
     Reload();
 }
 
-ShaderLibrary::~ShaderLibrary() = default;
+Shader::~Shader() = default;
 
-bool ShaderLibrary::NeedsReload() const
+bool Shader::NeedsReload() const
 {
-    if (!std::filesystem::exists(m_filePath))
+    try
     {
-	    return false;
+        return std::filesystem::last_write_time(m_filePath) > m_lastWriteTime;
     }
-
-    return std::filesystem::last_write_time(m_filePath) > m_lastWriteTime;
+    catch (const std::filesystem::filesystem_error&)
+    {
+        return false;
+    }
 }
 
-bool ShaderLibrary::Reload()
+bool Shader::Reload()
 {
     auto result = m_compiler.Compile(m_filePath);
 
@@ -41,7 +43,7 @@ bool ShaderLibrary::Reload()
     return true;
 }
 
-D3D12_SHADER_BYTECODE ShaderLibrary::GetBytecode() const
+D3D12_SHADER_BYTECODE Shader::GetBytecode() const
 {
     return { m_blob.data(), m_blob.size() };
 }

@@ -43,8 +43,9 @@ void RayGen()
     RayDesc ray;
     float3 up = float3(0.0, 1.0, 0.0);
     float3 right = float3(1.0, 0.0, 0.0);
-    float3 forward = float3(0.0, 0.0, 1.0);
-    ray.Origin = PinholeCamera(uv, forward, right, up);
+    float3 forward = float3(0.0, 0.0, -1.0);
+    ray.Origin = float3(0.0, 0.0, 1.0);
+    ray.Direction = PinholeCamera(uv, forward, right, up);
     //ray.Direction = normalize(float3(0.0, 0.0, 1.0));
     ray.Direction = normalize(-ray.Origin);
     ray.TMin = 0.0;

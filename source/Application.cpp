@@ -8,7 +8,7 @@
 
 Application::Application()
 {
-	m_window = std::make_unique<Window>(2560, 1440);
+	m_window = std::make_unique<Window>(1920, 1080);
 	m_renderer = std::make_unique<Renderer>(*m_window);
 	m_camera = std::make_shared<Camera>();
 	m_renderer->SetCamera(m_camera);

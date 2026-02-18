@@ -20,5 +20,8 @@ private:
 	std::unique_ptr<Window> m_window = nullptr;
 	std::shared_ptr<Camera> m_camera = nullptr;
 	std::unique_ptr<Renderer> m_renderer = nullptr;
+
+	double m_mouseXPrev = 0.0f;
+	double m_mouseYPrev = 0.0f;
 };
 

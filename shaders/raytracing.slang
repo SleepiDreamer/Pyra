@@ -1,5 +1,6 @@
-uniform RWTexture2D outputTexture;
+uniform RWTexture2D outputTexture : register(u0, space0);
 uniform RaytracingAccelerationStructure sceneBVH : register(t0, space0);
+uniform Camera camera : register(b0, space0);
 
 struct Camera
 {
@@ -18,18 +19,18 @@ struct [raypayload] Payload
     float3 color : read(caller) : write(caller, closesthit, miss);
 };
 
-float3 PinholeCamera(float2 uv, float3 cameraForward, float3 cameraRight, float3 cameraUp)
+float3 PinholeCamera(float2 uv, Camera camera)
 {
     float2 ndc = (uv * 2.0f) - 1.0f;
     float2 resolution = DispatchRaysDimensions().xy;
     float aspectRatio = resolution.x / resolution.y;
 
-    float x = ndc.x * aspectRatio * tan(radians(70) * 0.5);
-    float y = -ndc.y * tan(radians(70) * 0.5);
+    float x = ndc.x * aspectRatio * tan(radians(camera.fov) * 0.5);
+    float y = -ndc.y * tan(radians(camera.fov) * 0.5);
 
     float3 rayDir = normalize(float3(x, y, 1.0));
 
-    float3 rotatedRayDir = rayDir.x * cameraRight + rayDir.y * cameraUp + rayDir.z * cameraForward;
+    float3 rotatedRayDir = rayDir.x * camera.right + rayDir.y * camera.up + rayDir.z * camera.forward;
 
     return normalize(rotatedRayDir);
 }
@@ -41,11 +42,8 @@ void RayGen()
     float2 uv = (float2(idx) + 0.5) / DispatchRaysDimensions().xy;
 
     RayDesc ray;
-    float3 up = float3(0.0, 1.0, 0.0);
-    float3 right = float3(1.0, 0.0, 0.0);
-    float3 forward = float3(0.0, 0.0, -1.0);
-    ray.Origin = float3(0.0, 0.0, 1.0);
-    ray.Direction = PinholeCamera(uv, forward, right, up);
+    ray.Origin = float3(0.0, 0.0, -1.0);
+    ray.Direction = PinholeCamera(uv, camera);
     //ray.Direction = normalize(float3(0.0, 0.0, 1.0));
     ray.Direction = normalize(-ray.Origin);
     ray.TMin = 0.0;

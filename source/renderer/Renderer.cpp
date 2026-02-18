@@ -111,8 +111,9 @@ void Renderer::Render() const
 		ID3D12DescriptorHeap* heaps[] = { m_descriptorHeap->GetHeap() };
 		commandList->SetDescriptorHeaps(1, heaps);
 
-		commandList->SetComputeRootDescriptorTable(0, m_rtOutputTexture->GetUAV().gpuHandle); // u0:0
-		commandList->SetComputeRootShaderResourceView(1, m_tlas->GetResource().resource->GetGPUVirtualAddress()); // t0:0
+		commandList->SetComputeRootDescriptorTable(0, m_rtOutputTexture->GetUAV().gpuHandle); // u0:0 RT output
+		commandList->SetComputeRootShaderResourceView(1, m_tlas->GetResource().resource->GetGPUVirtualAddress()); // t0:0 TLAS
+		commandList->SetComputeRootConstantBufferView(2, m_cameraCB->GetGPUAddress(backBufferIndex)); // b0:0 Camera
 
 		auto dispatchDesc = m_rtPipeline->GetDispatchRaysDesc();
 		dispatchDesc.Width = m_swapChain->GetViewport().Width;

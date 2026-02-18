@@ -18,6 +18,8 @@ Application::Application()
 	glfwSetKeyCallback(glfwWindow, KeyCallback);
 	glfwSetWindowUserPointer(glfwWindow, this);
 
+	glfwGetCursorPos(glfwWindow, &m_mouseXPrev, &m_mouseYPrev);
+
 	float deltaTime = 0.0f;
 	static float lastFrameTime = 0.0f;
 	while (!glfwWindowShouldClose(glfwWindow))
@@ -76,6 +78,18 @@ void Application::Update(const float deltaTime)
 	if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS) // R
 	{
 		m_camera->Move(glm::vec3(0, deltaTime, 0));
+	}
+
+	if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS)
+	{
+		double x, y;
+		glfwGetCursorPos(window, &x, &y);
+
+		constexpr float sensitivity = 0.1f;
+		m_camera->Rotate(sensitivity * glm::vec2(static_cast<float>(x - m_mouseXPrev), static_cast<float>(y - m_mouseYPrev)));
+
+		m_mouseXPrev = x;
+		m_mouseYPrev = y;
 	}
 }
 

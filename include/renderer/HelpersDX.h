@@ -3,6 +3,12 @@
 #include <iostream>
 #include <stdexcept>
 
+inline void ThrowError(const std::string& msg)
+{
+    std::cerr << msg << std::endl;
+    __debugbreak();
+}
+
 inline void ThrowIfFailed(const HRESULT hr, const char* msg = "")
 {
     if (FAILED(hr))
@@ -17,7 +23,7 @@ inline void ThrowIfFailed(const HRESULT hr, const char* msg = "")
 		nullptr);
 
     	std::cerr << "HRESULT: " << hrCstr << std::endl;
-    	throw std::runtime_error(msg);
+        ThrowError(msg);
     }
 }
 
@@ -36,10 +42,4 @@ inline std::wstring ToWideString(const char* str)
     std::wstring wstr(len - 1, L'\0');
     MultiByteToWideChar(CP_UTF8, 0, str, -1, wstr.data(), len);
     return wstr;
-}
-
-inline void ThrowError(const std::string& msg)
-{
-	std::cerr << msg << std::endl;
-    __debugbreak();
 }

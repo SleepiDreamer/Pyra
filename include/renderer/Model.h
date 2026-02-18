@@ -1,8 +1,11 @@
 #pragma once
+#include "CommonDX.h"
 #include "Mesh.h"
+#include "Texture.h"
 
-#include <filesystem>
+#include <DirectXMath.h>
 #include <fastgltf/core.hpp>
+#include <filesystem>
 
 class GPUAllocator;
 
@@ -18,6 +21,8 @@ public:
     Model& operator=(Model&&) = default;
 
     [[nodiscard]] const std::vector<Mesh>& GetMeshes() const { return m_meshes; }
+    [[nodiscard]] const std::vector<Texture>& GetTextures() const { return m_textures; }
+	[[nodiscard]] const std::vector<MaterialData>& GetMaterials() const { return m_materials; }
     [[nodiscard]] const std::string& GetName() const { return m_name; }
 
 private:
@@ -30,7 +35,10 @@ private:
 
     void LoadMesh(RenderContext& context, const fastgltf::Asset& asset,
                   const fastgltf::Mesh& gltfMesh, const DirectX::XMMATRIX& transform);
+    void LoadMaterials(RenderContext& context, const fastgltf::Asset& asset);
 
     std::vector<Mesh> m_meshes;
+    std::vector<Texture> m_textures;
+    std::vector<MaterialData> m_materials;
     std::string m_name;
 };

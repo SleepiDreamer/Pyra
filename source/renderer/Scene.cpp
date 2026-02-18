@@ -1,9 +1,10 @@
 #include "Scene.h"
 #include "Model.h"
+#include "Mesh.h"
 #include "TLAS.h"
 #include "CommandQueue.h"
+#include "UploadContext.h"
 #include "GPUAllocator.h"
-
 
 Scene::Scene(RenderContext& context)
 	: m_context(context)
@@ -24,6 +25,41 @@ void Scene::LoadModel(const std::string& path)
 	}
 	m_tlas = std::make_unique<TLAS>(m_context);
 	m_tlas->Build(m_context.device, instances);
+}
+
+void Scene::UploadMaterials(RenderContext& context)
+{
+	std::vector<MaterialData> materials;
+	for (const auto& model : m_models)
+	{
+		for (const auto& texture : model.GetMaterials())
+		{
+			materials.push_back({
+				texture.albedoFactor,
+				texture.albedoIndex,
+				texture.metallicFactor,
+				texture.roughnessFactor,
+				texture.metallicRoughnessIndex,
+				texture.normalIndex,
+				texture.emissiveIndex
+			});
+		}
+	}
+
+	uint64_t size = materials.size() * sizeof(MaterialData);
+	m_materialData = context.allocator->CreateBuffer(
+		size, D3D12_RESOURCE_STATE_COMMON,
+		D3D12_RESOURCE_FLAG_NONE, D3D12_HEAP_TYPE_DEFAULT, "Materials");
+	context.uploadContext->Upload(m_materialData, materials.data(), size);
+
+	m_materialSRV = context.descriptorHeap->Allocate();
+	D3D12_SHADER_RESOURCE_VIEW_DESC desc{};
+	desc.ViewDimension = D3D12_SRV_DIMENSION_BUFFER;
+	desc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+	desc.Buffer.NumElements = static_cast<UINT>(materials.size());
+	desc.Buffer.StructureByteStride = sizeof(MaterialData);
+	desc.Format = DXGI_FORMAT_UNKNOWN;
+	context.device->CreateShaderResourceView(m_materialData.resource, &desc, m_materialSRV.cpuHandle);
 }
 
 D3D12_GPU_VIRTUAL_ADDRESS Scene::GetTLASAddress() const

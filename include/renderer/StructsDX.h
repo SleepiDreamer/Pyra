@@ -19,13 +19,17 @@ struct HitGroupRecord
 	D3D12_GPU_VIRTUAL_ADDRESS vertexBuffer;
 	D3D12_GPU_VIRTUAL_ADDRESS indexBuffer;
 	uint32_t materialIndex;
-	uint32_t padding;
+	uint32_t _pad0;
 };
 
 struct MaterialData
 {
-	uint32_t albedoIndex;
-	uint32_t metallicRoughnessIndex;
-	uint32_t normalIndex;
-	uint32_t emissionIndex;
+	glm::vec3 albedoFactor = glm::vec3(1.0f);
+	int32_t albedoIndex = -1;
+	float metallicFactor = 1.0f;
+	float roughnessFactor = 1.0f;
+	int32_t metallicRoughnessIndex = -1;
+	int32_t normalIndex = -1;
+	int32_t emissiveIndex = -1;
+	int32_t _pad0 = -1;
 };

@@ -16,7 +16,7 @@ RTPipeline::RTPipeline(ID3D12Device10* device, ID3D12RootSignature* rootSignatur
     m_shaderLibrary = std::make_unique<Shader>(compiler, shaderPath, entryPoints);
     if (!m_shaderLibrary->IsValid())
     {
-	    throw std::runtime_error("Failed to compile RT shaders: " + shaderPath);
+        ThrowError("Failed to compile RT shaders: " + shaderPath);
     }
 
     CreateLocalRootSignature(device);

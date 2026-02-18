@@ -1,5 +1,7 @@
 uniform RWTexture2D outputTexture : register(u0, space0);
 uniform RaytracingAccelerationStructure sceneBVH : register(t0, space0);
+StructuredBuffer<Material> materials : register(t1, space0);
+SamplerState linearSampler : register(s0, space0);
 uniform Camera camera : register(b0, space0);
 
 StructuredBuffer<Vertex> vertices : register(t0, space1);
@@ -26,10 +28,14 @@ struct Camera
 
 struct Material
 {
-    uint albedoIndex;
-    uint metallicRoughnessIndex;
-    uint normalIndex;
-    uint emissionIndex;
+    float3 albedoFactor;
+    int albedoIndex;
+    float metallicFactor;
+    float roughnessFactor;
+    int metallicRoughnessIndex;
+    int normalIndex;
+    int emissiveIndex;
+    int _pad0;
 };
 
 struct [raypayload] Payload
@@ -82,11 +88,17 @@ void ClosestHit(inout Payload payload, in BuiltInTriangleIntersectionAttributes 
     uint i2 = indices[baseIdx + 2];
 
     float w = 1 - attr.barycentrics.x - attr.barycentrics.y;
-    float3 normal = vertices[i0].normal * w
-                  + vertices[i1].normal * attr.barycentrics.x
-                  + vertices[i2].normal * attr.barycentrics.y;
+    float2 uv = vertices[i0].uv * w
+              + vertices[i1].uv * attr.barycentrics.x
+              + vertices[i2].uv * attr.barycentrics.y;
 
-    payload.color = (normal + 1) / 2;
+    Material mat = materials[InstanceID()];
+
+    DescriptorHandle<Texture2D> albedoHandle = DescriptorHandle<Texture2D>(uint2(mat.albedoIndex, 0));
+    Texture2D albedoTex = albedoHandle;
+    float3 albedo = albedoTex.SampleLevel(linearSampler, uv, 0).rgb * mat.albedoFactor;
+
+    payload.color = albedo;
 }
 
 [shader("miss")]

@@ -11,7 +11,9 @@ ShaderCompiler::ShaderCompiler()
 {
     slang::createGlobalSession(m_globalSession.writeRef());
     if (!m_globalSession)
-        throw std::runtime_error("Failed to create Slang global session");
+    {
+        ThrowError("Failed to create Slang global session");
+    };
 }
 
 ShaderCompiler::~ShaderCompiler() = default;
@@ -31,7 +33,7 @@ ShaderCompiler::CompilationResult ShaderCompiler::Compile(const std::string& fil
     slang::SessionDesc sessionDesc{};
     slang::TargetDesc targetDesc{};
     targetDesc.format = SLANG_DXIL;
-    targetDesc.profile = m_globalSession->findProfile("lib_6_5");
+    targetDesc.profile = m_globalSession->findProfile("sm_6_6");
     std::array<slang::CompilerOptionEntry, 1> options = {{{
     	slang::CompilerOptionName::GenerateWholeProgram,
 		{

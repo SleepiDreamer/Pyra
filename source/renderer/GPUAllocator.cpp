@@ -21,15 +21,20 @@ GPUAllocator::~GPUAllocator()
 GPUBuffer GPUAllocator::CreateBuffer(const uint64_t size, const D3D12_RESOURCE_STATES initialState,
 									 const D3D12_RESOURCE_FLAGS flags, const D3D12_HEAP_TYPE heapType, const char* name) const
 {
+    if (size == 0)
+    {
+		std::cerr << "Warning: Creating zero-sized buffer (" << name << ")\n";
+    }
+
     D3D12_RESOURCE_DESC resourceDesc = BUFFER_RESOURCE;
-    resourceDesc.Width = size;
+    resourceDesc.Width = std::max(size, 1ULL);
     resourceDesc.Flags = flags;
 
     D3D12MA::ALLOCATION_DESC allocDesc{};
     allocDesc.HeapType = heapType;
 
     GPUBuffer buffer{};
-    buffer.size = size;
+    buffer.size = std::max(size, 1ULL);
 
     ThrowIfFailed(m_allocator->CreateResource(
         &allocDesc,

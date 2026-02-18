@@ -44,8 +44,10 @@ Renderer::Renderer(Window& window, bool debug)
 
 	m_rootSignature = std::make_unique<RootSignature>();
 	m_rootSignature->AddDescriptorTable(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 1, 0, 0, "outputTexture"); // u0:0 RT output
-	m_rootSignature->AddRootSRV(0, 0, "sceneBVH"); // t0:0 TLAS
-	m_rootSignature->AddRootCBV(0, 0, "camera"); // b0:0 Camera
+	m_rootSignature->AddRootSRV(0, 0, "sceneBVH");	// t0:0 TLAS
+	m_rootSignature->AddRootSRV(1, 0, "materials"); // t1:0 materials
+	m_rootSignature->AddRootCBV(0, 0, "camera");	// b0:0 Camera
+	m_rootSignature->AddStaticSampler(0);			// s0:0 linear sampler
 	m_rootSignature->Build(device, L"RT Root Signature");
 
 	m_rtPipeline = std::make_unique<RTPipeline>(device, m_rootSignature->Get(), *m_shaderCompiler, m_scene->GetHitGroupRecords(), "shaders/raytracing.slang");
@@ -66,9 +68,22 @@ void Renderer::ToggleFullscreen() const
 	m_swapChain->ToggleFullscreen();
 }
 
-void Renderer::LoadModel(const std::string& path) const
+void Renderer::LoadModel(const std::string& path)
 {
 	m_scene->LoadModel(path);
+	m_scene->UploadMaterials(m_context);
+
+	m_uploadContext->Flush();
+
+	// TODO: fix
+	auto cmdList = m_commandQueue->GetCommandList();
+	for (auto& model : m_scene->GetModels())
+		for (auto& tex : model.GetTextures())
+			if (tex.GetResource())
+				TransitionResource(cmdList.Get(), tex.GetResource(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+	m_commandQueue->ExecuteCommandList(cmdList);
+	m_commandQueue->Flush();
+
 	m_rtPipeline->RebuildShaderTables(m_device->GetDevice(), m_scene->GetHitGroupRecords());
 }
 
@@ -100,15 +115,15 @@ void Renderer::Render() const
 		constexpr float clearColor[] = { 0.0f, 0.2f, 0.4f, 1.0f };
 		commandList->ClearRenderTargetView(m_swapChain->GetCurrentBackBufferRtv().cpuHandle, clearColor, 0, nullptr);
 
-		commandList->SetPipelineState1(m_rtPipeline->GetPSO());
-		commandList->SetComputeRootSignature(m_rootSignature->Get());
-
 		ID3D12DescriptorHeap* heaps[] = { m_descriptorHeap->GetHeap() };
 		commandList->SetDescriptorHeaps(1, heaps);
+		commandList->SetComputeRootSignature(m_rootSignature->Get());
+		commandList->SetPipelineState1(m_rtPipeline->GetPSO());
 
 		m_rootSignature->SetDescriptorTable(commandList.Get(), m_rtOutputTexture->GetUAV().gpuHandle, "outputTexture");
 		m_rootSignature->SetRootSRV(commandList.Get(), m_scene->GetTLASAddress(), "sceneBVH");
 		m_rootSignature->SetRootCBV(commandList.Get(), m_cameraCB->GetGPUAddress(backBufferIndex), "camera");
+		m_rootSignature->SetRootSRV(commandList.Get(), m_scene->GetMaterialsBufferAddress(), "materials");
 
 		auto dispatchDesc = m_rtPipeline->GetDispatchRaysDesc();
 		dispatchDesc.Width = m_swapChain->GetViewport().Width;

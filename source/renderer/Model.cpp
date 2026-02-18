@@ -1,6 +1,8 @@
 #include "Model.h"
 #include "GPUAllocator.h"
 
+#define STB_IMAGE_IMPLEMENTATION
+#include <stb_image.h>
 #include <fastgltf/glm_element_traits.hpp>
 #include <fastgltf/tools.hpp>
 #include <stdexcept>
@@ -22,7 +24,7 @@ void Model::LoadGLTF(RenderContext& context, const std::filesystem::path& path)
     auto data = fastgltf::GltfDataBuffer::FromPath(path);
     if (data.error() != fastgltf::Error::None)
     {
-	    throw std::runtime_error("Failed to load glTF file: " + path.string());
+        ThrowError("Failed to load glTF file: " + path.string());
     }
 
     constexpr auto options =
@@ -32,7 +34,7 @@ void Model::LoadGLTF(RenderContext& context, const std::filesystem::path& path)
     auto asset = parser.loadGltf(data.get(), path.parent_path(), options);
     if (asset.error() != fastgltf::Error::None)
     {
-	    throw std::runtime_error("Failed to parse glTF: " + path.string());
+        ThrowError("Failed to parse glTF: " + path.string());
     }
 
     size_t sceneIndex = asset->defaultScene.value_or(0);
@@ -42,6 +44,8 @@ void Model::LoadGLTF(RenderContext& context, const std::filesystem::path& path)
     {
         TraverseNode(context, asset.get(), nodeIndex, XMMatrixIdentity());
     }
+
+    LoadMaterials(context, asset.get());
 }
 
 void Model::TraverseNode(RenderContext& context,
@@ -100,15 +104,18 @@ void Model::LoadMesh(RenderContext& context, const fastgltf::Asset& asset, const
     for (const auto& primitive : gltfMesh.primitives)
     {
         if (primitive.type != fastgltf::PrimitiveType::Triangles)
-            continue; // Skip non-triangle primitives for now
+        {
+	        continue;
+        }
 
         std::vector<Vertex> vertices;
         std::vector<uint32_t> indices;
 
-        // Get position accessor (required)
         auto posIt = primitive.findAttribute("POSITION");
         if (posIt == primitive.attributes.end())
-            continue;
+        {
+	        continue;
+        }
 
         const auto& posAccessor = asset.accessors[posIt->accessorIndex];
         vertices.resize(posAccessor.count);
@@ -118,7 +125,8 @@ void Model::LoadMesh(RenderContext& context, const fastgltf::Asset& asset, const
             [&](const fastgltf::math::fvec3& pos, size_t idx)
             {
                 vertices[idx].position = XMFLOAT3(pos.x(), pos.y(), pos.z());
-            });
+            }
+        );
 
         // Load normals
         auto normIt = primitive.findAttribute("NORMAL");
@@ -129,7 +137,8 @@ void Model::LoadMesh(RenderContext& context, const fastgltf::Asset& asset, const
                 [&](const fastgltf::math::fvec3& norm, size_t idx)
                 {
                     vertices[idx].normal = XMFLOAT3(norm.x(), norm.y(), norm.z());
-                });
+                }
+            );
         }
 
         // Load texture coordinates
@@ -141,7 +150,8 @@ void Model::LoadMesh(RenderContext& context, const fastgltf::Asset& asset, const
                 [&](const fastgltf::math::fvec2& uv, size_t idx)
                 {
                     vertices[idx].texCoord = XMFLOAT2(uv.x(), uv.y());
-                });
+                }
+            );
         }
 
         // Load indices
@@ -175,5 +185,91 @@ void Model::LoadMesh(RenderContext& context, const fastgltf::Asset& asset, const
         mesh.Upload(context, vertices, indices, meshName);
         mesh.BuildBLAS(context);
         m_meshes.push_back(std::move(mesh));
+    }
+}
+
+void Model::LoadMaterials(RenderContext& context, const fastgltf::Asset& asset)
+{
+    for (auto& image : asset.images)
+    {
+        auto tex = Texture();
+
+        int width, height, nrChannels;
+        unsigned char* data = nullptr;
+
+        // From fastgltf examples
+        std::visit(fastgltf::visitor{
+             [](auto& arg) {},
+             [&](const fastgltf::sources::URI& filePath) {
+                 assert(filePath.fileByteOffset == 0);
+                 assert(filePath.uri.isLocalPath());
+
+                 const std::string path(filePath.uri.path().begin(), filePath.uri.path().end());
+                 data = stbi_load(path.c_str(), &width, &height, &nrChannels, 4);
+             },
+             [&](fastgltf::sources::Array& vector) {
+                 data = stbi_load_from_memory(reinterpret_cast<const stbi_uc*>(vector.bytes.data()),
+                                              static_cast<int>(vector.bytes.size()), &width, &height, &nrChannels, 4);
+             },
+             [&](const fastgltf::sources::BufferView& view) {
+                 auto& bufferView = asset.bufferViews[view.bufferViewIndex];
+                 auto& buffer = asset.buffers[bufferView.bufferIndex];
+                 std::visit(fastgltf::visitor {
+                     [](auto& arg) {},
+                     [&](fastgltf::sources::Array& vector) {
+                         data = stbi_load_from_memory(reinterpret_cast<const stbi_uc*>(vector.bytes.data() + bufferView.byteOffset),
+                                                      static_cast<int>(bufferView.byteLength), &width, &height, &nrChannels, 4);
+                     },
+                     [&](fastgltf::sources::ByteView& bv) {
+                         data = stbi_load_from_memory(reinterpret_cast<const stbi_uc*>(bv.bytes.data() + bufferView.byteOffset),
+                                                      static_cast<int>(bufferView.byteLength), &width, &height, &nrChannels, 4);
+                     }
+                 }, buffer.data);
+             },
+            }, image.data);
+
+        if (data)
+        {
+            tex.Upload(context, data, width, height, DXGI_FORMAT_R8G8B8A8_UNORM_SRGB, image.name.c_str());
+            stbi_image_free(data);
+        }
+
+        m_textures.push_back(std::move(tex));
+    }
+
+    for (const auto& mat : asset.materials)
+    {
+        MaterialData matData{};
+
+        if (mat.pbrData.baseColorTexture.has_value())
+        {
+            auto texIndex = asset.textures[mat.pbrData.baseColorTexture->textureIndex].imageIndex.value();
+            matData.albedoIndex = m_textures[texIndex].GetDescriptorIndex();
+        }
+
+        if (mat.pbrData.metallicRoughnessTexture.has_value())
+        {
+            auto texIndex = asset.textures[mat.pbrData.metallicRoughnessTexture->textureIndex].imageIndex.value();
+            matData.metallicRoughnessIndex = m_textures[texIndex].GetDescriptorIndex();
+        }
+
+        if (mat.normalTexture.has_value())
+        {
+            auto texIndex = asset.textures[mat.normalTexture->textureIndex].imageIndex.value();
+            matData.normalIndex = m_textures[texIndex].GetDescriptorIndex();
+        }
+
+        if (mat.emissiveTexture.has_value())
+        {
+            auto texIndex = asset.textures[mat.emissiveTexture->textureIndex].imageIndex.value();
+            matData.emissiveIndex = m_textures[texIndex].GetDescriptorIndex();
+        }
+
+        auto& factor = mat.pbrData.baseColorFactor;
+        matData.albedoFactor = { factor[0], factor[1], factor[2] };
+        matData.metallicFactor = mat.pbrData.metallicFactor;
+        matData.roughnessFactor = mat.pbrData.roughnessFactor;
+
+        m_materials.push_back(matData);
     }
 }

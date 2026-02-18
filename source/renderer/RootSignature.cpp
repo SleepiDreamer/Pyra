@@ -101,7 +101,7 @@ void RootSignature::Build(ID3D12Device* device, const wchar_t* name)
     desc.Init_1_1(
         static_cast<UINT>(m_params.size()), m_params.empty() ? nullptr : m_params.data(),
         static_cast<UINT>(m_samplers.size()), m_samplers.empty() ? nullptr : m_samplers.data(),
-        D3D12_ROOT_SIGNATURE_FLAG_NONE);
+        D3D12_ROOT_SIGNATURE_FLAG_CBV_SRV_UAV_HEAP_DIRECTLY_INDEXED);
 
     Microsoft::WRL::ComPtr<ID3DBlob> sigBlob;
     Microsoft::WRL::ComPtr<ID3DBlob> errorBlob;
@@ -116,20 +116,18 @@ void RootSignature::Build(ID3D12Device* device, const wchar_t* name)
         ThrowIfFailed(hr);
     }
 
-    ThrowIfFailed(device->CreateRootSignature(
-        0, sigBlob->GetBufferPointer(), sigBlob->GetBufferSize(),
-        IID_PPV_ARGS(&m_rootSignature)));
+    ThrowIfFailed(device->CreateRootSignature(0, sigBlob->GetBufferPointer(), sigBlob->GetBufferSize(), IID_PPV_ARGS(&m_rootSignature)));
 
     m_rootSignature->SetName(name);
 }
 
-void RootSignature::SetDescriptorTable(ID3D12GraphicsCommandList* commandList, D3D12_GPU_DESCRIPTOR_HANDLE handle, const std::string& name) const
+void RootSignature::SetDescriptorTable(ID3D12GraphicsCommandList* commandList, const D3D12_GPU_DESCRIPTOR_HANDLE handle, const std::string& name) const
 {
     UINT index = GetParameterIndex(name);
 	commandList->SetComputeRootDescriptorTable(index, handle);
 }
 
-void RootSignature::SetRootSRV(ID3D12GraphicsCommandList* commandList, D3D12_GPU_VIRTUAL_ADDRESS address, const std::string& name) const
+void RootSignature::SetRootSRV(ID3D12GraphicsCommandList* commandList, const D3D12_GPU_VIRTUAL_ADDRESS address, const std::string& name) const
 {
     UINT index = GetParameterIndex(name);
     commandList->SetComputeRootShaderResourceView(index, address);

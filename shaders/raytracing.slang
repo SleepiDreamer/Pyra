@@ -96,7 +96,7 @@ void ClosestHit(inout Payload payload, in BuiltInTriangleIntersectionAttributes 
 
     DescriptorHandle<Texture2D> albedoHandle = DescriptorHandle<Texture2D>(uint2(mat.albedoIndex, 0));
     Texture2D albedoTex = albedoHandle;
-    float3 albedo = albedoTex.SampleLevel(linearSampler, uv, 0).rgb * mat.albedoFactor;
+    float3 albedo = albedoTex.SampleLevel(linearSampler, uv, 0).rgb;
 
     payload.color = albedo;
 }

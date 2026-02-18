@@ -17,5 +17,5 @@ public:
 private:
 	GPUAllocator& m_allocator;
     std::unique_ptr<CommandQueue> m_queue;
-    std::vector<GPUBuffer> m_uploads;
+    std::vector<GPUBuffer> m_staged;
 };

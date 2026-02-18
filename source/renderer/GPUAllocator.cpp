@@ -48,7 +48,6 @@ GPUBuffer GPUAllocator::CreateBuffer(const uint64_t size, const D3D12_RESOURCE_S
     return buffer;
 }
 
-// GPUAllocator.cpp
 GPUBuffer GPUAllocator::CreateTexture(const uint32_t width, const uint32_t height, const DXGI_FORMAT format,
     const D3D12_RESOURCE_STATES initialState, const D3D12_RESOURCE_FLAGS flags, const wchar_t* name) const
 {

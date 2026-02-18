@@ -227,7 +227,7 @@ void Model::LoadMaterials(const fastgltf::Asset& asset)
 
         if (data)
         {
-            tex.Upload(m_context, data, width, height, DXGI_FORMAT_R8G8B8A8_UNORM_SRGB, image.name.c_str());
+            tex.Create(m_context, data, width, height, DXGI_FORMAT_R8G8B8A8_UNORM_SRGB, image.name.c_str());
             stbi_image_free(data);
         }
 

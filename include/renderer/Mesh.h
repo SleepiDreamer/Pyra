@@ -30,6 +30,8 @@ public:
 
     void Upload(const RenderContext& context, const std::vector<Vertex>& vertices, 
 				const std::vector<uint32_t>& indices, const std::string& name);
+    
+	void CreateSRVs(ID3D12Device* device) const;
 
     void BuildBLAS(RenderContext& context);
 
@@ -40,6 +42,8 @@ public:
     [[nodiscard]] uint32_t GetIndexCount() const { return m_indexCount; }
     [[nodiscard]] D3D12_VERTEX_BUFFER_VIEW GetVertexBufferView() const;
     [[nodiscard]] D3D12_INDEX_BUFFER_VIEW GetIndexBufferView() const;
+	[[nodiscard]] DescriptorHeap::Allocation GetVertexSRV() const { return m_vertexSRV; }
+	[[nodiscard]] DescriptorHeap::Allocation GetIndexSRV() const { return m_indexSRV; }
 	[[nodiscard]] D3D12_RAYTRACING_INSTANCE_DESC GetInstanceDesc(UINT instanceId) const;
 
     int32_t m_materialIndex = -1;
@@ -54,6 +58,4 @@ private:
 
     DescriptorHeap::Allocation m_vertexSRV;
     DescriptorHeap::Allocation m_indexSRV;
-    uint32_t m_vertexSRVIndex = 0;  // index into descriptor heap
-    uint32_t m_indexSRVIndex = 0;
 };

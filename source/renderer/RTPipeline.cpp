@@ -9,7 +9,7 @@
 
 using namespace Microsoft::WRL;
 
-RTPipeline::RTPipeline(ID3D12Device10* device, ID3D12RootSignature* rootSignature, ShaderCompiler& compiler, const std::string& shaderPath)
+RTPipeline::RTPipeline(ID3D12Device10* device, ID3D12RootSignature* rootSignature, ShaderCompiler& compiler, const std::vector<HitGroupRecord>& records, const std::string& shaderPath)
 	: m_rootSignature(rootSignature)
 {
 	std::vector<std::string> entryPoints = {};
@@ -19,11 +19,27 @@ RTPipeline::RTPipeline(ID3D12Device10* device, ID3D12RootSignature* rootSignatur
 	    throw std::runtime_error("Failed to compile RT shaders: " + shaderPath);
     }
 
+    CreateLocalRootSignature(device);
     CreatePSO(device);
-    CreateShaderTables(device);
+    CreateShaderTables(device, records);
 }
 
 RTPipeline::~RTPipeline() = default;
+
+void RTPipeline::CreateLocalRootSignature(ID3D12Device10* device)
+{
+    CD3DX12_ROOT_PARAMETER1 params[2] = {};
+    params[0].InitAsShaderResourceView(0, 1); // t0:1 vertices
+    params[1].InitAsShaderResourceView(1, 1); // t1:1 indices
+	//params[2].InitAsConstants(0, 1);          // b0:1 material index
+
+    CD3DX12_VERSIONED_ROOT_SIGNATURE_DESC desc;
+    desc.Init_1_1(2, params, 0, nullptr, D3D12_ROOT_SIGNATURE_FLAG_LOCAL_ROOT_SIGNATURE);
+
+    ComPtr<ID3DBlob> sigBlob, errorBlob;
+    ThrowIfFailed(D3DX12SerializeVersionedRootSignature(&desc, D3D_ROOT_SIGNATURE_VERSION_1_1, &sigBlob, &errorBlob));
+    ThrowIfFailed(device->CreateRootSignature(0, sigBlob->GetBufferPointer(), sigBlob->GetBufferSize(), IID_PPV_ARGS(&m_localRootSignature)));
+}
 
 void RTPipeline::CreatePSO(ID3D12Device10* device)
 {
@@ -41,12 +57,19 @@ void RTPipeline::CreatePSO(ID3D12Device10* device)
 
     auto shaderConfig = psoDesc.CreateSubobject<CD3DX12_RAYTRACING_SHADER_CONFIG_SUBOBJECT>();
     shaderConfig->Config(
-        sizeof(float) * 3,  // max payload size
-        sizeof(float) * 2   // max attribute size
+        sizeof(float) * 3, // max payload size
+        sizeof(float) * 2  // max attribute size
     );
 
     auto globalRootSig = psoDesc.CreateSubobject<CD3DX12_GLOBAL_ROOT_SIGNATURE_SUBOBJECT>();
     globalRootSig->SetRootSignature(m_rootSignature);
+
+    auto localRootSig = psoDesc.CreateSubobject<CD3DX12_LOCAL_ROOT_SIGNATURE_SUBOBJECT>();
+    localRootSig->SetRootSignature(m_localRootSignature.Get());
+
+    auto association = psoDesc.CreateSubobject<CD3DX12_SUBOBJECT_TO_EXPORTS_ASSOCIATION_SUBOBJECT>();
+    association->SetSubobjectToAssociate(*localRootSig);
+    association->AddExport(L"HitGroup");
 
     auto pipelineConfig = psoDesc.CreateSubobject<CD3DX12_RAYTRACING_PIPELINE_CONFIG_SUBOBJECT>();
     pipelineConfig->Config(2); // max recursion depth
@@ -54,13 +77,12 @@ void RTPipeline::CreatePSO(ID3D12Device10* device)
     ThrowIfFailed(device->CreateStateObject(psoDesc, IID_PPV_ARGS(&m_pso)));
 }
 
-void RTPipeline::CreateShaderTables(ID3D12Device10* device)
+void RTPipeline::CreateShaderTables(ID3D12Device10* device, const std::vector<HitGroupRecord>& hitGroupRecords)
 {
-    Microsoft::WRL::ComPtr<ID3D12StateObjectProperties> props;
+    ComPtr<ID3D12StateObjectProperties> props;
     ThrowIfFailed(m_pso.As(&props));
 
     constexpr UINT shaderIdSize = D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES;
-
     auto Align = [](UINT size, UINT alignment) -> UINT
     {
         return (size + alignment - 1) & ~(alignment - 1);
@@ -68,8 +90,8 @@ void RTPipeline::CreateShaderTables(ID3D12Device10* device)
 
     m_raygenRecordSize = Align(shaderIdSize, D3D12_RAYTRACING_SHADER_RECORD_BYTE_ALIGNMENT);
     m_missRecordSize = Align(shaderIdSize, D3D12_RAYTRACING_SHADER_RECORD_BYTE_ALIGNMENT);
-    m_hitGroupRecordSize = Align(shaderIdSize, D3D12_RAYTRACING_SHADER_RECORD_BYTE_ALIGNMENT);
-    m_hitGroupCount = 1; // number of meshes
+    m_hitGroupRecordSize = Align(shaderIdSize + sizeof(HitGroupRecord), D3D12_RAYTRACING_SHADER_RECORD_BYTE_ALIGNMENT);
+    m_hitGroupCount = static_cast<UINT>(hitGroupRecords.size());
 
     // Raygen table
     {
@@ -101,25 +123,30 @@ void RTPipeline::CreateShaderTables(ID3D12Device10* device)
 
     // Hit group table
     {
-        UINT tableSize = Align(m_hitGroupRecordSize * m_hitGroupCount,
-            D3D12_RAYTRACING_SHADER_TABLE_BYTE_ALIGNMENT);
+        UINT tableSize = Align(m_hitGroupRecordSize * m_hitGroupCount, D3D12_RAYTRACING_SHADER_TABLE_BYTE_ALIGNMENT);
         auto heapProps = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD);
-        auto bufDesc = CD3DX12_RESOURCE_DESC::Buffer(tableSize);
+        auto bufDesc = BUFFER_RESOURCE;
+		bufDesc.Width = std::max(1u, m_hitGroupRecordSize * m_hitGroupCount);
         ThrowIfFailed(device->CreateCommittedResource(&heapProps, D3D12_HEAP_FLAG_NONE,
 					  &bufDesc, D3D12_RESOURCE_STATE_GENERIC_READ, nullptr, IID_PPV_ARGS(&m_hitGroupTable)));
-
-        auto* id = props->GetShaderIdentifier(L"HitGroup");
-        assert(id != nullptr);
 
         void* mapped = nullptr;
         m_hitGroupTable->Map(0, nullptr, &mapped);
         auto* dst = static_cast<uint8_t*>(mapped);
-        memcpy(dst, id, shaderIdSize);
+        auto* shaderId = props->GetShaderIdentifier(L"HitGroup");
+
+        for (UINT i = 0; i < m_hitGroupCount; i++)
+        {
+            auto* record = dst + i * m_hitGroupRecordSize;
+            memcpy(record, shaderId, shaderIdSize);
+            memcpy(record + shaderIdSize, &hitGroupRecords[i], sizeof(HitGroupRecord));
+        }
+
         m_hitGroupTable->Unmap(0, nullptr);
     }
 }
 
-void RTPipeline::Rebuild(ID3D12Device10* device)
+void RTPipeline::Rebuild(ID3D12Device10* device, const std::vector<HitGroupRecord>& records)
 {
     m_pso.Reset();
     m_raygenTable.Reset();
@@ -127,18 +154,18 @@ void RTPipeline::Rebuild(ID3D12Device10* device)
     m_hitGroupTable.Reset();
 
     CreatePSO(device);
-    CreateShaderTables(device);
+    CreateShaderTables(device, records);
 }
 
-void RTPipeline::RebuildShaderTables(ID3D12Device10* device)
+void RTPipeline::RebuildShaderTables(ID3D12Device10* device, const std::vector<HitGroupRecord>& records)
 {
     m_raygenTable.Reset();
     m_missTable.Reset();
     m_hitGroupTable.Reset();
-    CreateShaderTables(device);
+	CreateShaderTables(device, records);
 }
 
-bool RTPipeline::CheckHotReload(ID3D12Device10* device, CommandQueue& commandQueue)
+bool RTPipeline::CheckHotReload(ID3D12Device10* device, CommandQueue& commandQueue, const std::vector<HitGroupRecord>& records)
 {
     if (!m_shaderLibrary->NeedsReload())
         return false;
@@ -150,7 +177,7 @@ bool RTPipeline::CheckHotReload(ID3D12Device10* device, CommandQueue& commandQue
     }
 
     commandQueue.Flush();
-    Rebuild(device);
+    Rebuild(device, records);
     std::cout << "[RTPipeline] Hot reload successful\n";
     return true;
 }

@@ -2,20 +2,26 @@ uniform RWTexture2D outputTexture : register(u0, space0);
 uniform RaytracingAccelerationStructure sceneBVH : register(t0, space0);
 uniform Camera camera : register(b0, space0);
 
-uniform StructuredBuffer<Material> materials : register(t0, space1);
-uniform Texture2D textures[] : register(t1, space1);
-uniform SamplerState linearSampler;
+StructuredBuffer<Vertex> vertices : register(t0, space1);
+StructuredBuffer<uint> indices : register(t1, space1);
+
+struct Vertex
+{
+    float3 position;
+    float3 normal;
+    float2 uv;
+}
 
 struct Camera
 {
     float3 position;
     float fov;
     float3 forward;
-    float _pad0;
+    uint _pad0;
     float3 right;
-    float _pad1;
+    uint _pad1;
     float3 up;
-    float _pad2;
+    uint _pad2;
 }
 
 struct Material
@@ -70,7 +76,17 @@ void RayGen()
 [shader("closesthit")]
 void ClosestHit(inout Payload payload, in BuiltInTriangleIntersectionAttributes attr)
 {
-    payload.color = float3(1.0, 0.0, 0.0);
+    uint baseIdx = PrimitiveIndex() * 3;
+    uint i0 = indices[baseIdx];
+    uint i1 = indices[baseIdx + 1];
+    uint i2 = indices[baseIdx + 2];
+
+    float w = 1 - attr.barycentrics.x - attr.barycentrics.y;
+    float3 normal = vertices[i0].normal * w
+                  + vertices[i1].normal * attr.barycentrics.x
+                  + vertices[i2].normal * attr.barycentrics.y;
+
+    payload.color = (normal + 1) / 2;
 }
 
 [shader("miss")]

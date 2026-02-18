@@ -53,8 +53,21 @@ void Mesh::Upload(const RenderContext& context, const std::vector<Vertex>& verti
 
     m_vertexSRV = context.descriptorHeap->Allocate();
     m_indexSRV = context.descriptorHeap->Allocate();
-    m_vertexSRVIndex = m_vertexSRV.index;
-    m_indexSRVIndex = m_indexSRV.index;
+
+    D3D12_SHADER_RESOURCE_VIEW_DESC vertexSrvDesc{};
+    vertexSrvDesc.ViewDimension = D3D12_SRV_DIMENSION_BUFFER;
+    vertexSrvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+    vertexSrvDesc.Buffer.NumElements = m_vertexCount;
+    vertexSrvDesc.Buffer.StructureByteStride = sizeof(Vertex);
+    vertexSrvDesc.Format = DXGI_FORMAT_UNKNOWN;
+    context.device->CreateShaderResourceView(m_vertexBuffer.resource, &vertexSrvDesc, m_vertexSRV.cpuHandle);
+
+    D3D12_SHADER_RESOURCE_VIEW_DESC indexSrvDesc{};
+    indexSrvDesc.ViewDimension = D3D12_SRV_DIMENSION_BUFFER;
+    indexSrvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+    indexSrvDesc.Buffer.NumElements = m_indexCount;
+    indexSrvDesc.Format = DXGI_FORMAT_R32_UINT;
+    context.device->CreateShaderResourceView(m_indexBuffer.resource, &indexSrvDesc, m_indexSRV.cpuHandle);
 }
 
 D3D12_RAYTRACING_GEOMETRY_DESC Mesh::GetGeometryDesc() const
@@ -97,7 +110,6 @@ D3D12_INDEX_BUFFER_VIEW Mesh::GetIndexBufferView() const
     };
 }
 
-// TODO: implement instanceID, hit group index
 D3D12_RAYTRACING_INSTANCE_DESC Mesh::GetInstanceDesc(const UINT instanceId) const
 {
     D3D12_RAYTRACING_INSTANCE_DESC desc = {};

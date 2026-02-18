@@ -24,24 +24,20 @@ Renderer::Renderer(Window& window, bool debug)
 {
 	m_device = std::make_unique<Device>(window.GetWidth(), window.GetHeight(), debug);
 	auto device = m_device->GetDevice();
-
 	m_commandQueue = std::make_unique<CommandQueue>(m_device->GetDevice(), D3D12_COMMAND_LIST_TYPE_DIRECT);
 	auto commandList = m_commandQueue->GetCommandList();
-
 	m_descriptorHeap = std::make_unique<DescriptorHeap>(device, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, 4096, true, L"CBV SRV UAV Descriptor Heap");
-
 	m_allocator = std::make_unique<GPUAllocator>(device, m_device->GetAdapter());
-
 	m_uploadContext = std::make_unique<UploadContext>(*m_allocator, device);
 
 	m_context = { device, m_allocator.get(), m_commandQueue.get(), m_descriptorHeap.get(), m_uploadContext.get() };
 
 	m_swapChain = std::make_unique<SwapChain>(window, device, m_device->GetAdapter(), m_commandQueue.get());
-	const int width = window.GetWidth();
-	const int height = window.GetHeight();
 
 	m_scene = std::make_unique<Scene>(m_context);
 
+	const int width = window.GetWidth();
+	const int height = window.GetHeight();
 	m_rtOutputTexture = std::make_unique<OutputTexture>(m_context, DXGI_FORMAT_R10G10B10A2_UNORM, width, height, L"RT Output Texture");
 
 	m_shaderCompiler = std::make_unique<ShaderCompiler>();
@@ -52,7 +48,7 @@ Renderer::Renderer(Window& window, bool debug)
 	m_rootSignature->AddRootCBV(0, 0, "camera"); // b0:0 Camera
 	m_rootSignature->Build(device, L"RT Root Signature");
 
-	m_rtPipeline = std::make_unique<RTPipeline>(device, m_rootSignature->Get(), *m_shaderCompiler, "shaders/raytracing.slang");
+	m_rtPipeline = std::make_unique<RTPipeline>(device, m_rootSignature->Get(), *m_shaderCompiler, m_scene->GetHitGroupRecords(), "shaders/raytracing.slang");
 
 	m_cameraCB = std::make_unique<CBVBuffer<CameraData>>(*m_allocator, "Camera CB");
 
@@ -73,6 +69,7 @@ void Renderer::ToggleFullscreen() const
 void Renderer::LoadModel(const std::string& path) const
 {
 	m_scene->LoadModel(path);
+	m_rtPipeline->RebuildShaderTables(m_device->GetDevice(), m_scene->GetHitGroupRecords());
 }
 
 void Renderer::Render() const
@@ -82,7 +79,7 @@ void Renderer::Render() const
 	auto commandList = m_commandQueue->GetCommandList();
 	auto commandQueue = m_commandQueue->GetQueue();
 
-	m_rtPipeline->CheckHotReload(m_device->GetDevice(), *m_commandQueue);
+	m_rtPipeline->CheckHotReload(m_device->GetDevice(), *m_commandQueue, m_scene->GetHitGroupRecords());
 
 	CameraData camData{};
 	camData.forward = m_camera->GetForward();

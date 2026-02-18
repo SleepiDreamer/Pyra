@@ -29,7 +29,7 @@ class Renderer
 public:
 	explicit Renderer(Window& window, bool debug);
 	~Renderer();
-	void Render() const;
+	void Render(float deltaTime);
 
 	void ToggleFullscreen() const;
 	void SetCamera(std::shared_ptr<Camera> camera) { m_camera = std::move(camera); }
@@ -56,5 +56,7 @@ private:
 	std::unique_ptr<CBVBuffer<CameraData>> m_cameraCB;
 
 	std::unique_ptr<OutputTexture> m_rtOutputTexture;
+
+	float m_reloadTimer = 0.0f;
 };
 

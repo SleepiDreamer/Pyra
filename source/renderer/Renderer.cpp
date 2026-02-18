@@ -71,30 +71,26 @@ void Renderer::ToggleFullscreen() const
 void Renderer::LoadModel(const std::string& path)
 {
 	m_scene->LoadModel(path);
-	m_scene->UploadMaterials(m_context);
-
-	m_uploadContext->Flush();
-
-	// TODO: fix
-	auto cmdList = m_commandQueue->GetCommandList();
-	for (auto& model : m_scene->GetModels())
-		for (auto& tex : model.GetTextures())
-			if (tex.GetResource())
-				TransitionResource(cmdList.Get(), tex.GetResource(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
-	m_commandQueue->ExecuteCommandList(cmdList);
-	m_commandQueue->Flush();
 
 	m_rtPipeline->RebuildShaderTables(m_device->GetDevice(), m_scene->GetHitGroupRecords());
 }
 
-void Renderer::Render() const
+void Renderer::Render(const float deltaTime)
 {
 	auto backBufferIndex = m_swapChain->GetCurrentBackBufferIndex();
 	auto backBuffer = m_swapChain->GetCurrentBackBuffer();
 	auto commandList = m_commandQueue->GetCommandList();
 	auto commandQueue = m_commandQueue->GetQueue();
 
-	m_rtPipeline->CheckHotReload(m_device->GetDevice(), *m_commandQueue, m_scene->GetHitGroupRecords());
+	if (m_reloadTimer >= 0.5f)
+	{
+		m_rtPipeline->CheckHotReload(m_device->GetDevice(), *m_commandQueue, m_scene->GetHitGroupRecords());
+		m_reloadTimer = 0.0f;
+	}
+	else
+	{
+		m_reloadTimer += deltaTime;
+	}
 
 	CameraData camData{};
 	camData.forward = m_camera->GetForward();

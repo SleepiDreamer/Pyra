@@ -14,7 +14,7 @@ public:
 	~Scene() = default;
 
 	void LoadModel(const std::string& path);
-	void UploadMaterials(RenderContext& context);
+	void UploadMaterials();
 
 	[[nodiscard]] const std::vector<Model>& GetModels() const { return m_models; }
 	[[nodiscard]] const TLAS& GetTLAS() const { return *m_tlas; }

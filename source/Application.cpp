@@ -35,7 +35,7 @@ Application::Application(const bool debugLayer)
 
 		Update(deltaTime);
 
-		m_renderer->Render();
+		m_renderer->Render(deltaTime);
 
 		lastFrameTime = currentFrameTime;
 	}

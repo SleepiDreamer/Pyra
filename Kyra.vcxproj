@@ -19,6 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="include\Camera.h" />
     <ClInclude Include="external\D3D12MA\D3D12MemAlloc.h" />
     <ClInclude Include="external\fastgltf\base64.hpp" />
     <ClInclude Include="external\fastgltf\core.hpp" />
@@ -53,6 +54,7 @@
     <ClInclude Include="include\renderer\RootSignature.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="source\Camera.cpp" />
     <ClCompile Include="external\D3D12MA\D3D12MemAlloc.cpp" />
     <ClCompile Include="external\fastgltf\base64.cpp" />
     <ClCompile Include="external\fastgltf\fastgltf.cpp" />

@@ -33,6 +33,7 @@
     <ClInclude Include="include\renderer\BLAS.h" />
     <ClInclude Include="include\renderer\GPUBuffer.h" />
     <ClInclude Include="include\renderer\GPUAllocator.h" />
+    <ClInclude Include="include\renderer\StructsDX.h" />
     <ClInclude Include="include\renderer\TLAS.h" />
     <ClInclude Include="include\renderer\CommonDX.h" />
     <ClInclude Include="include\renderer\DescriptorHeap.h" />

@@ -3,10 +3,14 @@ uniform RaytracingAccelerationStructure sceneBVH : register(t0, space0);
 
 struct Camera
 {
-    float3 forward;
-    float3 right;
-    float3 up;
+    float3 position;
     float fov;
+    float3 forward;
+    float _pad0;
+    float3 right;
+    float _pad1;
+    float3 up;
+    float _pad2;
 }
 
 struct [raypayload] Payload

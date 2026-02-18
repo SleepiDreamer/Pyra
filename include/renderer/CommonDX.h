@@ -1,4 +1,5 @@
 #pragma once
+#include "StructsDX.h"
 #include "HelpersDX.h"
 
 #include <d3d12.h>

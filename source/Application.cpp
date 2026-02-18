@@ -11,6 +11,9 @@ Application::Application(const bool debugLayer)
 	m_window = std::make_unique<Window>(1920, 1080);
 	m_renderer = std::make_unique<Renderer>(*m_window, debugLayer);
 	m_camera = std::make_shared<Camera>();
+	m_camera->SetPosition(glm::vec3(0.0f, 0.0f, 2.0f));
+	m_camera->SetDirection(glm::vec3(0.0f, 0.0f, -1.0f));
+	m_camera->m_fov = 60.0f;
 	m_renderer->SetCamera(m_camera);
 
 	auto glfwWindow = m_window->GetGLFWWindow();
@@ -87,7 +90,7 @@ void Application::Update(const float deltaTime)
 	{
 
 		const float sensitivity = static_cast<float>(5.0 / m_window->GetWidth());
-		m_camera->Rotate(sensitivity * glm::vec2(static_cast<float>(x - m_mouseXPrev), static_cast<float>(y - m_mouseYPrev)));
+		m_camera->Rotate(sensitivity * glm::vec2(static_cast<float>(m_mouseXPrev - x), static_cast<float>(m_mouseYPrev - y)));
 	}
 
 	m_mouseXPrev = x;

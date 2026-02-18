@@ -10,8 +10,9 @@
 #include "SwapChain.h"
 #include "OutputTexture.h"
 #include "ShaderCompiler.h"
-#include "RTPipeline.h"
 #include "RootSignature.h"
+#include "RTPipeline.h"
+#include "Scene.h"
 #include "CommonDX.h"
 
 #include <iostream>
@@ -37,16 +38,8 @@ Renderer::Renderer(Window& window, bool debug)
 	const int width = window.GetWidth();
 	const int height = window.GetHeight();
 
-	m_model = std::make_unique<Model>(device, *m_commandQueue, *m_allocator, "assets/models/Triangle.gltf");
-
-	m_tlas = std::make_unique<TLAS>(device, *m_allocator, *m_commandQueue);
-	std::vector<D3D12_RAYTRACING_INSTANCE_DESC> instances = {};
-	auto& meshes = m_model->GetMeshes();
-	for (auto& mesh : meshes)
-	{
-		instances.emplace_back(mesh.GetInstanceDesc());
-	}
-	m_tlas->Build(device, instances);
+	m_scene = std::make_unique<Scene>(device, *m_commandQueue, *m_allocator);
+	m_scene->LoadModel("assets/models/DamagedHelmet.glb");
 
 	m_rtOutputTexture = std::make_unique<OutputTexture>(device, *m_allocator, *m_descriptorHeap, DXGI_FORMAT_R10G10B10A2_UNORM, width, height, L"RT Output Texture");
 	TransitionResource(commandList.Get(), m_rtOutputTexture->GetResource(), D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_COPY_SOURCE);
@@ -112,7 +105,7 @@ void Renderer::Render() const
 		commandList->SetDescriptorHeaps(1, heaps);
 
 		m_rootSignature->SetDescriptorTable(commandList.Get(), m_rtOutputTexture->GetUAV().gpuHandle, "outputTexture");
-		m_rootSignature->SetRootSRV(commandList.Get(), m_tlas->GetResource().resource->GetGPUVirtualAddress(), "sceneBVH");
+		m_rootSignature->SetRootSRV(commandList.Get(), m_scene->GetTLASAddress(), "sceneBVH");
 		m_rootSignature->SetRootCBV(commandList.Get(), m_cameraCB->GetGPUAddress(backBufferIndex), "camera");
 
 		auto dispatchDesc = m_rtPipeline->GetDispatchRaysDesc();

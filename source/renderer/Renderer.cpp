@@ -1,5 +1,6 @@
 #include "Renderer.h"
 #include "Window.h"
+#include "Camera.h"
 #include "Device.h"
 #include "CommandQueue.h"
 #include "DescriptorHeap.h"
@@ -9,11 +10,11 @@
 #include "OutputTexture.h"
 #include "ShaderCompiler.h"
 #include "RTPipeline.h"
+#include "RootSignature.h"
 #include "CommonDX.h"
 
 #include <iostream>
 
-#include "RootSignature.h"
 
 using namespace Microsoft::WRL;
 

@@ -8,6 +8,7 @@
 #include "TLAS.h"
 
 class Window;
+class Camera;
 class Device;
 class CommandQueue;
 class SwapChain;
@@ -28,9 +29,11 @@ public:
 	void Render() const;
 
 	void ToggleFullscreen() const;
+	void SetCamera(std::shared_ptr<Camera> camera) { m_camera = std::move(camera); }
 
 private:
 	Window& m_window;
+	std::shared_ptr<Camera> m_camera = nullptr;
 	std::unique_ptr<Device> m_device = nullptr;
 	std::unique_ptr<GPUAllocator> m_allocator = nullptr;
 	std::unique_ptr<CommandQueue> m_commandQueue = nullptr;

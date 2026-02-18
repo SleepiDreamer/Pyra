@@ -49,3 +49,18 @@ void OutputTexture::Resize(ID3D12Device* device, const uint32_t width, const uin
 {
     Create(device, width, height);
 }
+
+void OutputTexture::Transition(ID3D12GraphicsCommandList* commandList, D3D12_RESOURCE_STATES newState) const
+{
+    if (newState != m_currentState)
+    {
+        D3D12_RESOURCE_BARRIER barrier = {};
+        barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+        barrier.Transition.pResource = m_resource.resource;
+        barrier.Transition.StateBefore = m_currentState;
+        barrier.Transition.StateAfter = newState;
+        barrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+        commandList->ResourceBarrier(1, &barrier);
+        m_currentState = newState;
+	}
+}

@@ -27,6 +27,7 @@ public:
 	void CreateBackBuffers(ID3D12Device* device);
 	void Resize(uint32_t width, uint32_t height, ID3D12Device* device);
 	void Present();
+	void Transition(ID3D12GraphicsCommandList* commandList, D3D12_RESOURCE_STATES newState) const;
 
 private:
 	Window& m_window;
@@ -38,6 +39,7 @@ private:
 	DescriptorHeap::Allocation m_backBufferRtvs[NUM_FRAMES_IN_FLIGHT];
 	UINT m_currentBackBufferIndex = 0;
 	DXGI_FORMAT m_format = DXGI_FORMAT_R10G10B10A2_UNORM;
+	mutable D3D12_RESOURCE_STATES m_currentState = D3D12_RESOURCE_STATE_COMMON;
 
 	bool m_useAdaptiveSync = false;
 	bool m_useVsync = false;

@@ -196,3 +196,18 @@ void SwapChain::Present()
 	ThrowIfFailed(m_swapChain->Present(syncInterval, presentFlags));
 	m_currentBackBufferIndex = m_swapChain->GetCurrentBackBufferIndex();
 }
+
+void SwapChain::Transition(ID3D12GraphicsCommandList* commandList, D3D12_RESOURCE_STATES newState) const
+{
+	if (newState != m_currentState)
+	{
+		D3D12_RESOURCE_BARRIER barrier = {};
+		barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+		barrier.Transition.pResource = m_backBuffers[m_currentBackBufferIndex].Get();
+		barrier.Transition.StateBefore = m_currentState;
+		barrier.Transition.StateAfter = newState;
+		barrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+		commandList->ResourceBarrier(1, &barrier);
+		m_currentState = newState;
+	}
+}

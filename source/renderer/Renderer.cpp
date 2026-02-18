@@ -41,7 +41,6 @@ Renderer::Renderer(Window& window, bool debug)
 	m_scene = std::make_unique<Scene>(device, *m_commandQueue, *m_allocator);
 
 	m_rtOutputTexture = std::make_unique<OutputTexture>(device, *m_allocator, *m_descriptorHeap, DXGI_FORMAT_R10G10B10A2_UNORM, width, height, L"RT Output Texture");
-	TransitionResource(commandList.Get(), m_rtOutputTexture->GetResource(), D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_COPY_SOURCE);
 
 	m_shaderCompiler = std::make_unique<ShaderCompiler>();
 
@@ -69,7 +68,7 @@ void Renderer::ToggleFullscreen() const
 	m_swapChain->ToggleFullscreen();
 }
 
-void Renderer::LoadModel(const std::string& path)
+void Renderer::LoadModel(const std::string& path) const
 {
 	m_scene->LoadModel(path);
 }
@@ -93,8 +92,8 @@ void Renderer::Render() const
 
 	// Begin frame
 	{
-		TransitionResource(commandList.Get(), m_rtOutputTexture->GetResource(), D3D12_RESOURCE_STATE_COPY_SOURCE, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
-		TransitionResource(commandList.Get(), backBuffer, D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET);
+		m_rtOutputTexture->Transition(commandList.Get(), D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+		m_swapChain->Transition(commandList.Get(), D3D12_RESOURCE_STATE_RENDER_TARGET);
 	}
 
 	// Record commands
@@ -120,12 +119,11 @@ void Renderer::Render() const
 
 	// End frame
 	{
-		TransitionResource(commandList.Get(), m_rtOutputTexture->GetResource(), D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_COPY_SOURCE);
-		TransitionResource(commandList.Get(), backBuffer, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_COPY_DEST);
-
+		m_rtOutputTexture->Transition(commandList.Get(), D3D12_RESOURCE_STATE_COPY_SOURCE);
+		m_swapChain->Transition(commandList.Get(), D3D12_RESOURCE_STATE_COPY_DEST);
 		commandList->CopyResource(backBuffer, m_rtOutputTexture->GetResource());
+		m_swapChain->Transition(commandList.Get(), D3D12_RESOURCE_STATE_PRESENT);
 
-		TransitionResource(commandList.Get(), backBuffer, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_PRESENT);
 		m_commandQueue->ExecuteCommandList(commandList);
 		m_swapChain->Present();
 	}

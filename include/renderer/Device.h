@@ -9,14 +9,14 @@ class Window;
 class Device
 {
 public:
-	explicit Device(const int width, const int height);
+	explicit Device(const int width, const int height, bool debug);
 	~Device();
 
 	[[nodiscard]] IDXGIAdapter4* GetAdapter() const { return m_adapter.Get(); }
 	[[nodiscard]] ID3D12Device10* GetDevice() const { return m_device.Get(); }
 
 private:
-	void EnableDebugLayer();
+	static void EnableDebugLayer();
 	void CreateAdapter();
 	void CreateDevice();
 

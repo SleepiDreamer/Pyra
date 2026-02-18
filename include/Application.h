@@ -10,7 +10,7 @@ class Renderer;
 class Application
 {
 public:
-	Application();
+	Application(bool debugLayer);
 	~Application();
 
 	void Update(float deltaTime);

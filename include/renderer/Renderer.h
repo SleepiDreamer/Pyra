@@ -26,7 +26,7 @@ class CBVBuffer;
 class Renderer
 {
 public:
-	explicit Renderer(Window& window);
+	explicit Renderer(Window& window, bool debug);
 	~Renderer();
 	void Render() const;
 

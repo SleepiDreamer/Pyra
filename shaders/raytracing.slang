@@ -42,7 +42,7 @@ void RayGen()
     float2 uv = (float2(idx) + 0.5) / DispatchRaysDimensions().xy;
 
     RayDesc ray;
-    ray.Origin = float3(0.0, 0.0, 0.0);
+    ray.Origin = camera.position;
     ray.Direction = PinholeCamera(uv, camera);
     ray.TMin = 0.0;
     ray.TMax = 1000.0;

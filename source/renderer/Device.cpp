@@ -8,12 +8,13 @@
 
 using namespace Microsoft::WRL;
 
-Device::Device(const int width, const int height)
+Device::Device(const int width, const int height, const bool debug)
 {
-#ifdef _DEBUG
-	EnableDebugLayer();
-	std::cout << "Debug layer enabled!" << std::endl;
-#endif
+    if (debug)
+    {
+        EnableDebugLayer();
+        std::cout << "Debug layer enabled!\n";
+    }
 
 	CreateAdapter();
 
@@ -28,7 +29,7 @@ void Device::EnableDebugLayer()
     ThrowIfFailed(D3D12GetDebugInterface(IID_PPV_ARGS(&debugInterface)));
     debugInterface->EnableDebugLayer();
 
-#if 1 // GPU-based validation
+#if 0 // GPU-based validation
     ComPtr<ID3D12Debug1> debug1;
     if (SUCCEEDED(debugInterface.As(&debug1)))
     {

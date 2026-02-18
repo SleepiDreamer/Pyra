@@ -6,10 +6,10 @@
 #define GLFW_INCLUDE_NONE
 #include <glfw3.h>
 
-Application::Application()
+Application::Application(const bool debugLayer)
 {
 	m_window = std::make_unique<Window>(1920, 1080);
-	m_renderer = std::make_unique<Renderer>(*m_window);
+	m_renderer = std::make_unique<Renderer>(*m_window, debugLayer);
 	m_camera = std::make_shared<Camera>();
 	m_renderer->SetCamera(m_camera);
 

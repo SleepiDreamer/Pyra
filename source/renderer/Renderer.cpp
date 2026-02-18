@@ -18,10 +18,10 @@
 
 using namespace Microsoft::WRL;
 
-Renderer::Renderer(Window& window)
+Renderer::Renderer(Window& window, bool debug)
 	: m_window(window)
 {
-	m_device = std::make_unique<Device>(window.GetWidth(), window.GetHeight());
+	m_device = std::make_unique<Device>(window.GetWidth(), window.GetHeight(), debug);
 	auto device = m_device->GetDevice();
 
 	m_commandQueue = std::make_unique<CommandQueue>(m_device->GetDevice(), D3D12_COMMAND_LIST_TYPE_DIRECT);

@@ -21,8 +21,8 @@ SwapChain::SwapChain(Window& window, ID3D12Device* device, IDXGIAdapter4* adapte
 	m_useVsync = !m_useAdaptiveSync;
 	m_useHdr = CheckHDRSupport(adapter);
 
-	std::cout << "Tearing support: " << (m_useAdaptiveSync ? "Yes" : "No") << std::endl;
-	std::cout << "HDR support: " << (m_useHdr ? "Yes" : "No") << std::endl;
+	std::cout << "Tearing supported: " << (m_useAdaptiveSync ? "Yes" : "No") << std::endl;
+	std::cout << "HDR supported: " << (m_useHdr ? "Yes" : "No") << std::endl;
 
 	// Create swap chain
 	{

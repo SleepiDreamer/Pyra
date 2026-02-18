@@ -23,5 +23,6 @@ private:
 
 	double m_mouseXPrev = 0.0f;
 	double m_mouseYPrev = 0.0f;
+	bool m_mouseCaptured = false;
 };
 

@@ -15,6 +15,7 @@ Application::Application(const bool debugLayer)
 	m_camera->SetDirection(glm::vec3(0.0f, 0.0f, -1.0f));
 	m_camera->m_fov = 60.0f;
 	m_renderer->SetCamera(m_camera);
+	m_renderer->LoadModel("assets/models/DamagedHelmet.glb");
 
 	auto glfwWindow = m_window->GetGLFWWindow();
 
@@ -86,7 +87,7 @@ void Application::Update(const float deltaTime)
 	double x, y;
 	glfwGetCursorPos(window, &x, &y);
 
-	if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS)
+	if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS || m_mouseCaptured)
 	{
 
 		const float sensitivity = static_cast<float>(5.0 / m_window->GetWidth());
@@ -103,5 +104,23 @@ void Application::KeyCallback(GLFWwindow* window, int key, int scancode, int act
 	if ((key == GLFW_KEY_ENTER && action == GLFW_PRESS) && (mods & GLFW_MOD_ALT))
 	{
 		app->m_renderer->ToggleFullscreen();
+	}
+	if (key == GLFW_KEY_TAB && action == GLFW_PRESS)
+	{
+		app->m_mouseCaptured = !app->m_mouseCaptured;
+		if (app->m_mouseCaptured)
+		{
+			glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+			if (glfwRawMouseMotionSupported())
+			{
+				glfwSetInputMode(window, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
+			}
+		}
+		else
+		{
+			glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+		}
+
+		glfwGetCursorPos(window, &app->m_mouseXPrev, &app->m_mouseYPrev);
 	}
 }

@@ -39,7 +39,6 @@ Renderer::Renderer(Window& window, bool debug)
 	const int height = window.GetHeight();
 
 	m_scene = std::make_unique<Scene>(device, *m_commandQueue, *m_allocator);
-	m_scene->LoadModel("assets/models/DamagedHelmet.glb");
 
 	m_rtOutputTexture = std::make_unique<OutputTexture>(device, *m_allocator, *m_descriptorHeap, DXGI_FORMAT_R10G10B10A2_UNORM, width, height, L"RT Output Texture");
 	TransitionResource(commandList.Get(), m_rtOutputTexture->GetResource(), D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_COPY_SOURCE);
@@ -47,9 +46,9 @@ Renderer::Renderer(Window& window, bool debug)
 	m_shaderCompiler = std::make_unique<ShaderCompiler>();
 
 	m_rootSignature = std::make_unique<RootSignature>();
-	UINT outputSlot = m_rootSignature->AddDescriptorTable(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 1, 0, 0, "outputTexture"); // u0:0 RT output
-	UINT tlasSlot = m_rootSignature->AddRootSRV(0, 0, "sceneBVH"); // t0:0 TLAS
-	UINT cameraSlot = m_rootSignature->AddRootCBV(0, 0, "camera"); // b0:0 Camera
+	m_rootSignature->AddDescriptorTable(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 1, 0, 0, "outputTexture"); // u0:0 RT output
+	m_rootSignature->AddRootSRV(0, 0, "sceneBVH"); // t0:0 TLAS
+	m_rootSignature->AddRootCBV(0, 0, "camera"); // b0:0 Camera
 	m_rootSignature->Build(device, L"RT Root Signature");
 
 	m_rtPipeline = std::make_unique<RTPipeline>(device, m_rootSignature->Get(), *m_shaderCompiler, "shaders/raytracing.slang");
@@ -68,6 +67,11 @@ Renderer::~Renderer()
 void Renderer::ToggleFullscreen() const
 {
 	m_swapChain->ToggleFullscreen();
+}
+
+void Renderer::LoadModel(const std::string& path)
+{
+	m_scene->LoadModel(path);
 }
 
 void Renderer::Render() const

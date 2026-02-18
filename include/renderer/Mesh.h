@@ -28,8 +28,8 @@ public:
     Mesh(Mesh&& other) noexcept;
     Mesh& operator=(Mesh&& other) noexcept;
 
-    void Upload(const RenderContext& context, const std::vector<Vertex>& vertices, 
-				const std::vector<uint32_t>& indices, const std::string& name);
+    void Upload(const RenderContext& context, const std::vector<Vertex>& vertices,
+                const std::vector<uint32_t>& indices, const std::string& name);
 
     void BuildBLAS(RenderContext& context);
 

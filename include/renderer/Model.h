@@ -26,17 +26,18 @@ public:
     [[nodiscard]] const std::string& GetName() const { return m_name; }
 
 private:
-    void LoadGLTF(RenderContext& context, const std::filesystem::path& path);
+    void LoadGLTF(const std::filesystem::path& path);
 
-    void TraverseNode(RenderContext& context, const fastgltf::Asset& asset,
+    void TraverseNode(const fastgltf::Asset& asset,
                       size_t nodeIndex, const DirectX::XMMATRIX& parentTransform);
 
     static DirectX::XMMATRIX GetNodeTransform(const fastgltf::Node& node);
 
-    void LoadMesh(RenderContext& context, const fastgltf::Asset& asset,
+    void LoadMesh(const fastgltf::Asset& asset,
                   const fastgltf::Mesh& gltfMesh, const DirectX::XMMATRIX& transform);
-    void LoadMaterials(RenderContext& context, const fastgltf::Asset& asset);
+    void LoadMaterials(const fastgltf::Asset& asset);
 
+    RenderContext& m_context;
     std::vector<Mesh> m_meshes;
     std::vector<Texture> m_textures;
     std::vector<MaterialData> m_materials;

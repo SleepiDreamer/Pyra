@@ -2,6 +2,7 @@
 #include "HelpersDX.h"
 #include <iostream>
 
+// Returns the root parameter index of the added descriptor table
 UINT RootSignature::AddDescriptorTable(const D3D12_DESCRIPTOR_RANGE_TYPE type, const UINT count, 
 									   const UINT baseRegister, const UINT space)
 {
@@ -16,6 +17,7 @@ UINT RootSignature::AddDescriptorTable(const D3D12_DESCRIPTOR_RANGE_TYPE type, c
     return static_cast<UINT>(m_params.size() - 1);
 }
 
+// Returns the root parameter index of the added SRV
 UINT RootSignature::AddRootSRV(const UINT reg, const UINT space)
 {
     CD3DX12_ROOT_PARAMETER1 param;
@@ -24,6 +26,7 @@ UINT RootSignature::AddRootSRV(const UINT reg, const UINT space)
     return static_cast<UINT>(m_params.size() - 1);
 }
 
+// Returns the root parameter index of the added UAV
 UINT RootSignature::AddRootUAV(const UINT reg, const UINT space)
 {
     CD3DX12_ROOT_PARAMETER1 param;
@@ -32,6 +35,7 @@ UINT RootSignature::AddRootUAV(const UINT reg, const UINT space)
     return static_cast<UINT>(m_params.size() - 1);
 }
 
+// Returns the root parameter index of the added CBV
 UINT RootSignature::AddRootCBV(const UINT reg, const UINT space)
 {
     CD3DX12_ROOT_PARAMETER1 param;
@@ -40,6 +44,7 @@ UINT RootSignature::AddRootCBV(const UINT reg, const UINT space)
     return static_cast<UINT>(m_params.size() - 1);
 }
 
+// Returns the root parameter index of the added constants
 UINT RootSignature::AddRootConstants(const UINT num32BitValues, const UINT reg, const UINT space)
 {
     CD3DX12_ROOT_PARAMETER1 param;

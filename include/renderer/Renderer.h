@@ -20,6 +20,8 @@ class OutputTexture;
 class ShaderCompiler;
 class RootSignature;
 class RTPipeline;
+template<typename T>
+class CBVBuffer;
 
 class Renderer
 {
@@ -34,6 +36,7 @@ public:
 private:
 	Window& m_window;
 	std::shared_ptr<Camera> m_camera = nullptr;
+	std::unique_ptr<CBVBuffer<CameraData>> m_cameraCB;
 	std::unique_ptr<Device> m_device = nullptr;
 	std::unique_ptr<GPUAllocator> m_allocator = nullptr;
 	std::unique_ptr<CommandQueue> m_commandQueue = nullptr;

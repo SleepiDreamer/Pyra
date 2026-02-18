@@ -31,6 +31,7 @@
     <ClInclude Include="external\fastgltf\util.hpp" />
     <ClInclude Include="external\simdjson\simdjson.h" />
     <ClInclude Include="include\renderer\BLAS.h" />
+    <ClInclude Include="include\renderer\CBVBuffer.h" />
     <ClInclude Include="include\renderer\GPUBuffer.h" />
     <ClInclude Include="include\renderer\GPUAllocator.h" />
     <ClInclude Include="include\renderer\StructsDX.h" />

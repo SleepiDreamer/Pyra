@@ -5,6 +5,7 @@
 #include "CommandQueue.h"
 #include "DescriptorHeap.h"
 #include "GPUAllocator.h"
+#include "CBVBuffer.h"
 #include "UploadContext.h"
 #include "SwapChain.h"
 #include "OutputTexture.h"
@@ -15,10 +16,9 @@
 
 #include <iostream>
 
-
 using namespace Microsoft::WRL;
 
-Renderer::Renderer(Window& window) 
+Renderer::Renderer(Window& window)
 	: m_window(window)
 {
 	m_device = std::make_unique<Device>(window.GetWidth(), window.GetHeight());
@@ -37,7 +37,7 @@ Renderer::Renderer(Window& window)
 	const int width = window.GetWidth();
 	const int height = window.GetHeight();
 
-	m_model = std::make_unique<Model>(device,*m_commandQueue, *m_allocator, "assets/models/Triangle.gltf");
+	m_model = std::make_unique<Model>(device, *m_commandQueue, *m_allocator, "assets/models/Triangle.gltf");
 
 	m_tlas = std::make_unique<TLAS>(device, *m_allocator, *m_commandQueue);
 	std::vector<D3D12_RAYTRACING_INSTANCE_DESC> instances = {};
@@ -54,18 +54,21 @@ Renderer::Renderer(Window& window)
 	m_shaderCompiler = std::make_unique<ShaderCompiler>();
 
 	m_rootSignature = std::make_unique<RootSignature>();
-	m_rootSignature->AddDescriptorTable(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 1, 0, 0); // u0:0
-	m_rootSignature->AddRootSRV(0, 0); // t0:0
+	UINT outputSlot = m_rootSignature->AddDescriptorTable(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 1, 0, 0); // u0:0 RT output
+	UINT tlasSlot = m_rootSignature->AddRootSRV(0, 0); // t0:0 TLAS
+	UINT cameraSlot = m_rootSignature->AddRootCBV(0, 0); // b0:0 Camera
 	m_rootSignature->Build(device, L"RT Root Signature");
 
 	m_rtPipeline = std::make_unique<RTPipeline>(device, m_rootSignature->Get(), *m_shaderCompiler, "shaders/raytracing.slang");
+
+	m_cameraCB = std::make_unique<CBVBuffer<CameraData>>(*m_allocator, "Camera CB");
 
 	m_commandQueue->ExecuteCommandList(commandList);
 	m_commandQueue->Flush();
 }
 
 Renderer::~Renderer()
-{ 
+{
 	m_commandQueue->Flush();
 }
 
@@ -82,6 +85,14 @@ void Renderer::Render() const
 	auto commandQueue = m_commandQueue->GetQueue();
 
 	m_rtPipeline->CheckHotReload(m_device->GetDevice(), *m_commandQueue);
+
+	CameraData camData{};
+	camData.forward = m_camera->GetForward();
+	camData.right = m_camera->GetRight();
+	camData.up = m_camera->GetUp();
+	camData.position = m_camera->GetPosition();
+	camData.fov = m_camera->m_fov;
+	m_cameraCB->Update(backBufferIndex, camData);
 
 	// Begin frame
 	{
@@ -100,8 +111,8 @@ void Renderer::Render() const
 		ID3D12DescriptorHeap* heaps[] = { m_descriptorHeap->GetHeap() };
 		commandList->SetDescriptorHeaps(1, heaps);
 
-		commandList->SetComputeRootDescriptorTable(0, m_rtOutputTexture->GetUAV().gpuHandle);
-		commandList->SetComputeRootShaderResourceView(1, m_tlas->GetResource().resource->GetGPUVirtualAddress());
+		commandList->SetComputeRootDescriptorTable(0, m_rtOutputTexture->GetUAV().gpuHandle); // u0:0
+		commandList->SetComputeRootShaderResourceView(1, m_tlas->GetResource().resource->GetGPUVirtualAddress()); // t0:0
 
 		auto dispatchDesc = m_rtPipeline->GetDispatchRaysDesc();
 		dispatchDesc.Width = m_swapChain->GetViewport().Width;

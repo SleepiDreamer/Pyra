@@ -54,9 +54,9 @@ Renderer::Renderer(Window& window)
 	m_shaderCompiler = std::make_unique<ShaderCompiler>();
 
 	m_rootSignature = std::make_unique<RootSignature>();
-	UINT outputSlot = m_rootSignature->AddDescriptorTable(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 1, 0, 0); // u0:0 RT output
-	UINT tlasSlot = m_rootSignature->AddRootSRV(0, 0); // t0:0 TLAS
-	UINT cameraSlot = m_rootSignature->AddRootCBV(0, 0); // b0:0 Camera
+	UINT outputSlot = m_rootSignature->AddDescriptorTable(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 1, 0, 0, "outputTexture"); // u0:0 RT output
+	UINT tlasSlot = m_rootSignature->AddRootSRV(0, 0, "sceneBVH"); // t0:0 TLAS
+	UINT cameraSlot = m_rootSignature->AddRootCBV(0, 0, "camera"); // b0:0 Camera
 	m_rootSignature->Build(device, L"RT Root Signature");
 
 	m_rtPipeline = std::make_unique<RTPipeline>(device, m_rootSignature->Get(), *m_shaderCompiler, "shaders/raytracing.slang");
@@ -111,9 +111,9 @@ void Renderer::Render() const
 		ID3D12DescriptorHeap* heaps[] = { m_descriptorHeap->GetHeap() };
 		commandList->SetDescriptorHeaps(1, heaps);
 
-		commandList->SetComputeRootDescriptorTable(0, m_rtOutputTexture->GetUAV().gpuHandle); // u0:0 RT output
-		commandList->SetComputeRootShaderResourceView(1, m_tlas->GetResource().resource->GetGPUVirtualAddress()); // t0:0 TLAS
-		commandList->SetComputeRootConstantBufferView(2, m_cameraCB->GetGPUAddress(backBufferIndex)); // b0:0 Camera
+		m_rootSignature->SetDescriptorTable(commandList.Get(), m_rtOutputTexture->GetUAV().gpuHandle, "outputTexture");
+		m_rootSignature->SetRootSRV(commandList.Get(), m_tlas->GetResource().resource->GetGPUVirtualAddress(), "sceneBVH");
+		m_rootSignature->SetRootCBV(commandList.Get(), m_cameraCB->GetGPUAddress(backBufferIndex), "camera");
 
 		auto dispatchDesc = m_rtPipeline->GetDispatchRaysDesc();
 		dispatchDesc.Width = m_swapChain->GetViewport().Width;

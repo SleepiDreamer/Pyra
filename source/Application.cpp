@@ -57,40 +57,41 @@ void Application::Update(const float deltaTime)
 	auto window = m_window->GetGLFWWindow();
 	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) // W
 	{
-		m_camera->Move(deltaTime * m_camera->GetForward());
+		m_camera->Move(deltaTime * m_camera->GetForward() * cameraSpeed);
 	}
 	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) // S
 	{
-		m_camera->Move(-deltaTime * m_camera->GetForward());
+		m_camera->Move(-deltaTime * m_camera->GetForward() * cameraSpeed);
 	}
 	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) // A
 	{
-		m_camera->Move(-deltaTime * m_camera->GetRight());
+		m_camera->Move(-deltaTime * m_camera->GetRight() * cameraSpeed);
 	}
 	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) // D
 	{
-		m_camera->Move(deltaTime * m_camera->GetRight());
+		m_camera->Move(deltaTime * m_camera->GetRight() * cameraSpeed);
 	}
 	if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS) // Q
 	{
-		m_camera->Move(glm::vec3(0, -deltaTime, 0));
+		m_camera->Move(glm::vec3(0, -deltaTime, 0) * cameraSpeed);
 	}
 	if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS) // R
 	{
-		m_camera->Move(glm::vec3(0, deltaTime, 0));
+		m_camera->Move(glm::vec3(0, deltaTime, 0) * cameraSpeed);
 	}
+
+	double x, y;
+	glfwGetCursorPos(window, &x, &y);
 
 	if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS)
 	{
-		double x, y;
-		glfwGetCursorPos(window, &x, &y);
 
-		constexpr float sensitivity = 0.1f;
+		const float sensitivity = static_cast<float>(5.0 / m_window->GetWidth());
 		m_camera->Rotate(sensitivity * glm::vec2(static_cast<float>(x - m_mouseXPrev), static_cast<float>(y - m_mouseYPrev)));
-
-		m_mouseXPrev = x;
-		m_mouseYPrev = y;
 	}
+
+	m_mouseXPrev = x;
+	m_mouseYPrev = y;
 }
 
 void Application::KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods)

@@ -42,10 +42,8 @@ void RayGen()
     float2 uv = (float2(idx) + 0.5) / DispatchRaysDimensions().xy;
 
     RayDesc ray;
-    ray.Origin = float3(0.0, 0.0, -1.0);
+    ray.Origin = float3(0.0, 0.0, 0.0);
     ray.Direction = PinholeCamera(uv, camera);
-    //ray.Direction = normalize(float3(0.0, 0.0, 1.0));
-    ray.Direction = normalize(-ray.Origin);
     ray.TMin = 0.0;
     ray.TMax = 1000.0;
 
@@ -66,5 +64,5 @@ void ClosestHit(inout Payload payload, in BuiltInTriangleIntersectionAttributes 
 [shader("miss")]
 void Miss(inout Payload payload)
 {
-    payload.color = float3(0.0, 0.0, 1.0);
+    payload.color = (WorldRayDirection() + 1.0) / 2.0;
 }

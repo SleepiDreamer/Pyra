@@ -2,8 +2,8 @@
 #include "GPUAllocator.h"
 #include "CommandQueue.h"
 
-BLAS::BLAS(GPUAllocator& allocator, CommandQueue& commandQueue)
-    : m_allocator(allocator), m_commandQueue(commandQueue)
+BLAS::BLAS(const RenderContext& context)
+    : m_allocator(*context.allocator), m_commandQueue(*context.commandQueue)
 {
 }
 

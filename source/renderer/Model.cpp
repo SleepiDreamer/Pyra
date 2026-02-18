@@ -7,15 +7,15 @@
 
 using namespace DirectX;
 
-Model::Model(ID3D12Device10* device, CommandQueue& commandQueue, GPUAllocator& allocator, const std::filesystem::path& path)
+Model::Model(RenderContext& context, const std::filesystem::path& path)
     : m_name(path.stem().string())
 {
-    LoadGLTF(device, commandQueue, allocator, path);
+    LoadGLTF(context, path);
 }
 
 Model::~Model() = default;
 
-void Model::LoadGLTF(ID3D12Device10* device, CommandQueue& commandQueue, GPUAllocator& allocator, const std::filesystem::path& path)
+void Model::LoadGLTF(RenderContext& context, const std::filesystem::path& path)
 {
     fastgltf::Parser parser;
 
@@ -40,13 +40,11 @@ void Model::LoadGLTF(ID3D12Device10* device, CommandQueue& commandQueue, GPUAllo
 
     for (size_t nodeIndex : scene.nodeIndices)
     {
-        TraverseNode(device, commandQueue, allocator, asset.get(), nodeIndex, XMMatrixIdentity());
+        TraverseNode(context, asset.get(), nodeIndex, XMMatrixIdentity());
     }
 }
 
-void Model::TraverseNode(ID3D12Device10* device, 
-						 CommandQueue& commandQueue,
-						 GPUAllocator& allocator,
+void Model::TraverseNode(RenderContext& context,
 					     const fastgltf::Asset& asset,
 					     size_t nodeIndex,
 					     const XMMATRIX& parentTransform)
@@ -60,14 +58,14 @@ void Model::TraverseNode(ID3D12Device10* device,
     if (node.meshIndex.has_value())
     {
         const auto& mesh = asset.meshes[node.meshIndex.value()];
-        LoadMesh(device, commandQueue, allocator, asset, mesh, worldTransform);
+        LoadMesh(context, asset, mesh, worldTransform);
     }
 
     // TODO: Handle lights when node.lightIndex.has_value()
 
     for (size_t childIndex : node.children)
     {
-        TraverseNode(device, commandQueue, allocator, asset, childIndex, worldTransform);
+        TraverseNode(context, asset, childIndex, worldTransform);
     }
 }
 
@@ -97,12 +95,7 @@ XMMATRIX Model::GetNodeTransform(const fastgltf::Node& node)
         }, node.transform);
 }
 
-void Model::LoadMesh(ID3D12Device10* device, 
-					 CommandQueue& commandQueue,
-					 GPUAllocator& allocator,
-				     const fastgltf::Asset& asset,
-				     const fastgltf::Mesh& gltfMesh,
-				     const XMMATRIX& transform)
+void Model::LoadMesh(RenderContext& context, const fastgltf::Asset& asset, const fastgltf::Mesh& gltfMesh, const XMMATRIX& transform)
 {
     for (const auto& primitive : gltfMesh.primitives)
     {
@@ -179,8 +172,8 @@ void Model::LoadMesh(ID3D12Device10* device,
         std::string meshName = m_name + "_" + std::string(gltfMesh.name) +
             "_prim" + std::to_string(m_meshes.size());
 
-        mesh.Upload(allocator, vertices, indices, meshName);
-        mesh.BuildBLAS(device, allocator, commandQueue);
+        mesh.Upload(context, vertices, indices, meshName);
+        mesh.BuildBLAS(context);
         m_meshes.push_back(std::move(mesh));
     }
 }

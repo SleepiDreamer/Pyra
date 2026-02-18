@@ -12,3 +12,11 @@ struct CameraData
 	glm::vec3 up;
 	float _pad2;
 };
+
+struct MaterialData
+{
+	uint32_t albedoIndex;
+	uint32_t metallicRoughnessIndex;
+	uint32_t normalIndex;
+	uint32_t emissionIndex;
+};

@@ -8,7 +8,7 @@ class CommandQueue;
 class TLAS
 {
 public:
-	TLAS(ID3D12Device10* device, GPUAllocator& allocator, CommandQueue& commandQueue);
+	TLAS(RenderContext& context);
 	~TLAS();
 	TLAS(const TLAS&) = delete;
 	TLAS& operator=(const TLAS&) = delete;
@@ -18,8 +18,7 @@ public:
 
 	[[nodiscard]] const GPUBuffer& GetResource() const { return m_result; }
 private:
-	GPUAllocator& m_allocator;
-	CommandQueue& m_commandQueue;
+	RenderContext& m_context;
 	GPUBuffer m_result;
 	GPUBuffer m_scratch;
 	GPUBuffer m_tlasInstances;

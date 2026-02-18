@@ -2,6 +2,10 @@ uniform RWTexture2D outputTexture : register(u0, space0);
 uniform RaytracingAccelerationStructure sceneBVH : register(t0, space0);
 uniform Camera camera : register(b0, space0);
 
+uniform StructuredBuffer<Material> materials : register(t0, space1);
+uniform Texture2D textures[] : register(t1, space1);
+uniform SamplerState linearSampler;
+
 struct Camera
 {
     float3 position;
@@ -13,6 +17,14 @@ struct Camera
     float3 up;
     float _pad2;
 }
+
+struct Material
+{
+    uint albedoIndex;
+    uint metallicRoughnessIndex;
+    uint normalIndex;
+    uint emissionIndex;
+};
 
 struct [raypayload] Payload
 {

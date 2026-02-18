@@ -8,7 +8,7 @@ class CommandQueue;
 class BLAS
 {
 public:
-    BLAS(GPUAllocator& allocator, CommandQueue& commandQueue);
+    BLAS(const RenderContext& context);
     ~BLAS();
     BLAS(const BLAS&) = delete;
     BLAS& operator=(const BLAS&) = delete;

@@ -39,10 +39,12 @@ private:
 	std::shared_ptr<Camera> m_camera = nullptr;
 	std::unique_ptr<Device> m_device = nullptr;
 
+	RenderContext m_context;
 	std::unique_ptr<GPUAllocator> m_allocator = nullptr;
 	std::unique_ptr<CommandQueue> m_commandQueue = nullptr;
 	std::unique_ptr<DescriptorHeap> m_descriptorHeap = nullptr;
 	std::unique_ptr<UploadContext> m_uploadContext = nullptr;
+
 	std::unique_ptr<SwapChain> m_swapChain = nullptr;
 	std::unique_ptr<ShaderCompiler> m_shaderCompiler;
 	std::unique_ptr<RootSignature> m_rootSignature;

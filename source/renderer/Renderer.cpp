@@ -28,19 +28,21 @@ Renderer::Renderer(Window& window, bool debug)
 	m_commandQueue = std::make_unique<CommandQueue>(m_device->GetDevice(), D3D12_COMMAND_LIST_TYPE_DIRECT);
 	auto commandList = m_commandQueue->GetCommandList();
 
-	m_descriptorHeap = std::make_unique<DescriptorHeap>(device, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, NUM_FRAMES_IN_FLIGHT, true, L"CBV SRV UAV Descriptor Heap");
+	m_descriptorHeap = std::make_unique<DescriptorHeap>(device, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, 4096, true, L"CBV SRV UAV Descriptor Heap");
 
 	m_allocator = std::make_unique<GPUAllocator>(device, m_device->GetAdapter());
 
 	m_uploadContext = std::make_unique<UploadContext>(*m_allocator, device);
 
+	m_context = { device, m_allocator.get(), m_commandQueue.get(), m_descriptorHeap.get(), m_uploadContext.get() };
+
 	m_swapChain = std::make_unique<SwapChain>(window, device, m_device->GetAdapter(), m_commandQueue.get());
 	const int width = window.GetWidth();
 	const int height = window.GetHeight();
 
-	m_scene = std::make_unique<Scene>(device, *m_commandQueue, *m_allocator);
+	m_scene = std::make_unique<Scene>(m_context);
 
-	m_rtOutputTexture = std::make_unique<OutputTexture>(device, *m_allocator, *m_descriptorHeap, DXGI_FORMAT_R10G10B10A2_UNORM, width, height, L"RT Output Texture");
+	m_rtOutputTexture = std::make_unique<OutputTexture>(m_context, DXGI_FORMAT_R10G10B10A2_UNORM, width, height, L"RT Output Texture");
 
 	m_shaderCompiler = std::make_unique<ShaderCompiler>();
 

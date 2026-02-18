@@ -2,8 +2,8 @@
 #include "GPUAllocator.h"
 #include "CommandQueue.h"
 
-TLAS::TLAS(ID3D12Device10* device, GPUAllocator& allocator, CommandQueue& commandQueue)
-	: m_allocator(allocator), m_commandQueue(commandQueue)
+TLAS::TLAS(RenderContext& context)
+	: m_context(context)
 {
 }
 
@@ -12,7 +12,7 @@ TLAS::~TLAS() = default;
 void TLAS::Build(ID3D12Device10* device, const std::vector<D3D12_RAYTRACING_INSTANCE_DESC>& instances)
 {
     uint64_t instancesSize = instances.size() * sizeof(D3D12_RAYTRACING_INSTANCE_DESC);
-    m_tlasInstances = m_allocator.CreateBuffer(
+    m_tlasInstances = m_context.allocator->CreateBuffer(
         instancesSize, D3D12_RESOURCE_STATE_GENERIC_READ, D3D12_RESOURCE_FLAG_NONE, 
         D3D12_HEAP_TYPE_UPLOAD, "TLAS Instances Buffer");
 
@@ -30,15 +30,15 @@ void TLAS::Build(ID3D12Device10* device, const std::vector<D3D12_RAYTRACING_INST
     D3D12_RAYTRACING_ACCELERATION_STRUCTURE_PREBUILD_INFO prebuildInfo{};
     device->GetRaytracingAccelerationStructurePrebuildInfo(&inputs, &prebuildInfo);
 
-    m_result = m_allocator.CreateBuffer(
+    m_result = m_context.allocator->CreateBuffer(
         prebuildInfo.ResultDataMaxSizeInBytes, D3D12_RESOURCE_STATE_RAYTRACING_ACCELERATION_STRUCTURE,
         D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS, D3D12_HEAP_TYPE_DEFAULT, "TLAS Result Buffer");
 
-    m_scratch = m_allocator.CreateBuffer(
+    m_scratch = m_context.allocator->CreateBuffer(
         prebuildInfo.ScratchDataSizeInBytes, D3D12_RESOURCE_STATE_COMMON,
         D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS, D3D12_HEAP_TYPE_DEFAULT, "TLAS Scratch Buffer");
 
-    auto commandList = m_commandQueue.GetCommandList();
+    auto commandList = m_context.commandQueue->GetCommandList();
     D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_DESC buildDesc{};
     buildDesc.Inputs = inputs;
     buildDesc.Inputs.InstanceDescs = m_tlasInstances.resource->GetGPUVirtualAddress();
@@ -49,8 +49,8 @@ void TLAS::Build(ID3D12Device10* device, const std::vector<D3D12_RAYTRACING_INST
     CD3DX12_RESOURCE_BARRIER barrier = CD3DX12_RESOURCE_BARRIER::UAV(nullptr);
     commandList->ResourceBarrier(1, &barrier);
 
-    m_commandQueue.ExecuteCommandList(commandList);
-    m_commandQueue.Flush();
+    m_context.commandQueue->ExecuteCommandList(commandList);
+    m_context.commandQueue->Flush();
 }
 
 void TLAS::Update(const std::vector<D3D12_RAYTRACING_INSTANCE_DESC>& instances) const
@@ -74,11 +74,11 @@ void TLAS::Update(const std::vector<D3D12_RAYTRACING_INSTANCE_DESC>& instances) 
     buildDesc.ScratchAccelerationStructureData = m_scratch.resource->GetGPUVirtualAddress();
     buildDesc.SourceAccelerationStructureData = m_result.resource->GetGPUVirtualAddress();
 
-    auto commandList = m_commandQueue.GetCommandList();
+    auto commandList = m_context.commandQueue->GetCommandList();
     commandList->BuildRaytracingAccelerationStructure(&buildDesc, 0, nullptr);
 
     CD3DX12_RESOURCE_BARRIER barrier = CD3DX12_RESOURCE_BARRIER::UAV(nullptr);
     commandList->ResourceBarrier(1, &barrier);
 
-    m_commandQueue.ExecuteCommandList(commandList);
+    m_context.commandQueue->ExecuteCommandList(commandList);
 }

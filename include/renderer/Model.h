@@ -9,8 +9,7 @@ class GPUAllocator;
 class Model
 {
 public:
-    Model(ID3D12Device10* device, CommandQueue& commandQueue, GPUAllocator& allocator,
-          const std::filesystem::path& path);
+    Model(RenderContext& context, const std::filesystem::path& path);
     ~Model();
 
     Model(const Model&) = delete;
@@ -22,15 +21,15 @@ public:
     [[nodiscard]] const std::string& GetName() const { return m_name; }
 
 private:
-    void LoadGLTF(ID3D12Device10* device, CommandQueue& commandQueue, GPUAllocator& allocator, const std::filesystem::path& path);
+    void LoadGLTF(RenderContext& context, const std::filesystem::path& path);
 
-    void TraverseNode(ID3D12Device10* device, CommandQueue& commandQueue,
-                      GPUAllocator& allocator, const fastgltf::Asset& asset, size_t nodeIndex, const DirectX::XMMATRIX& parentTransform);
+    void TraverseNode(RenderContext& context, const fastgltf::Asset& asset,
+                      size_t nodeIndex, const DirectX::XMMATRIX& parentTransform);
 
     static DirectX::XMMATRIX GetNodeTransform(const fastgltf::Node& node);
 
-    void LoadMesh(ID3D12Device10* device, CommandQueue& commandQueue, GPUAllocator& allocator,
-                  const fastgltf::Asset& asset, const fastgltf::Mesh& gltfMesh, const DirectX::XMMATRIX& transform);
+    void LoadMesh(RenderContext& context, const fastgltf::Asset& asset,
+                  const fastgltf::Mesh& gltfMesh, const DirectX::XMMATRIX& transform);
 
     std::vector<Mesh> m_meshes;
     std::string m_name;

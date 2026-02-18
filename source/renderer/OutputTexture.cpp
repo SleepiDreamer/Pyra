@@ -1,18 +1,18 @@
 #include "OutputTexture.h"
 #include "GPUAllocator.h"
 
-OutputTexture::OutputTexture(ID3D12Device* device, GPUAllocator& allocator, DescriptorHeap& descriptorHeap, const DXGI_FORMAT format, const int width, const int height, std::wstring name)
-	: m_allocator(allocator), m_descriptorHeap(descriptorHeap), m_format(format), m_name(std::move(name))
+OutputTexture::OutputTexture(RenderContext& context, const DXGI_FORMAT format, const int width, const int height, std::wstring name)
+	: m_context(context), m_format(format), m_name(std::move(name))
 {
-    Create(device, width, height);
+    Create(m_context.device, width, height);
 }
 
 OutputTexture::~OutputTexture()
 {
     if (m_initialized)
     {
-        m_descriptorHeap.Free(m_uav);
-        m_descriptorHeap.Free(m_srv);
+        m_context.descriptorHeap->Free(m_uav);
+        m_context.descriptorHeap->Free(m_srv);
     }
 }
 
@@ -20,14 +20,14 @@ void OutputTexture::Create(ID3D12Device* device, const uint32_t width, const uin
 {
     if (m_initialized)
     {
-        m_descriptorHeap.Free(m_uav);
-        m_descriptorHeap.Free(m_srv);
+        m_context.descriptorHeap->Free(m_uav);
+        m_context.descriptorHeap->Free(m_srv);
     }
 
-	m_resource = m_allocator.CreateTexture(width, height, m_format, D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS, m_name.c_str());
+	m_resource = m_context.allocator->CreateTexture(width, height, m_format, D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS, m_name.c_str());
 
-    m_uav = m_descriptorHeap.Allocate();
-    m_srv = m_descriptorHeap.Allocate();
+    m_uav = m_context.descriptorHeap->Allocate();
+    m_srv = m_context.descriptorHeap->Allocate();
 
     D3D12_UNORDERED_ACCESS_VIEW_DESC uavDesc = {};
 	uavDesc.Format = m_format;

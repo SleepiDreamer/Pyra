@@ -1,6 +1,7 @@
 #include "Mesh.h"
 #include "CommandQueue.h"
 #include "GPUAllocator.h"
+#include "UploadContext.h"
 #include "BLAS.h"
 
 Mesh::Mesh() = default;
@@ -29,39 +30,31 @@ Mesh& Mesh::operator=(Mesh&& other) noexcept
     return *this;
 }
 
-void Mesh::Upload(const GPUAllocator& allocator, const std::vector<Vertex>& vertices,
-				  const std::vector<uint32_t>& indices, const std::string& name)
+void Mesh::Upload(const RenderContext& context, const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices, const std::string& name)
 {
     m_vertexCount = static_cast<uint32_t>(vertices.size());
     m_indexCount = static_cast<uint32_t>(indices.size());
 
-    const uint64_t verticesSize = vertices.size() * sizeof(Vertex);
-    const uint64_t indicesSize = indices.size() * sizeof(uint32_t);
+    uint64_t verticesSize = vertices.size() * sizeof(Vertex);
+    uint64_t indicesSize = indices.size() * sizeof(uint32_t);
 
-    m_vertexBuffer = allocator.CreateBuffer(
-        verticesSize,
-        D3D12_RESOURCE_STATE_COMMON,
-        D3D12_RESOURCE_FLAG_NONE,
-        D3D12_HEAP_TYPE_UPLOAD, // TODO: Use DEFAULT + staging
-        (name + "_VB").c_str()
-    );
+    m_vertexBuffer = context.allocator->CreateBuffer(
+        verticesSize, D3D12_RESOURCE_STATE_COMMON,
+        D3D12_RESOURCE_FLAG_NONE, D3D12_HEAP_TYPE_DEFAULT,
+        (name + "_VB").c_str());
 
-    m_indexBuffer = allocator.CreateBuffer(
-        indicesSize,
-        D3D12_RESOURCE_STATE_COMMON,
-        D3D12_RESOURCE_FLAG_NONE,
-        D3D12_HEAP_TYPE_UPLOAD, // TODO: Use DEFAULT + staging
-        (name + "_IB").c_str()
-    );
+    m_indexBuffer = context.allocator->CreateBuffer(
+        indicesSize, D3D12_RESOURCE_STATE_COMMON,
+        D3D12_RESOURCE_FLAG_NONE, D3D12_HEAP_TYPE_DEFAULT,
+        (name + "_IB").c_str());
 
-    void* mapped = nullptr;
-    m_vertexBuffer.resource->Map(0, nullptr, &mapped);
-    memcpy(mapped, vertices.data(), verticesSize);
-    m_vertexBuffer.resource->Unmap(0, nullptr);
+    context.uploadContext->Upload(m_vertexBuffer, vertices.data(), verticesSize);
+    context.uploadContext->Upload(m_indexBuffer, indices.data(), indicesSize);
 
-    m_indexBuffer.resource->Map(0, nullptr, &mapped);
-    memcpy(mapped, indices.data(), indicesSize);
-    m_indexBuffer.resource->Unmap(0, nullptr);
+    m_vertexSRV = context.descriptorHeap->Allocate();
+    m_indexSRV = context.descriptorHeap->Allocate();
+    m_vertexSRVIndex = m_vertexSRV.index;
+    m_indexSRVIndex = m_indexSRV.index;
 }
 
 D3D12_RAYTRACING_GEOMETRY_DESC Mesh::GetGeometryDesc() const
@@ -79,11 +72,11 @@ D3D12_RAYTRACING_GEOMETRY_DESC Mesh::GetGeometryDesc() const
     return desc;
 }
 
-void Mesh::BuildBLAS(ID3D12Device10* device, GPUAllocator& allocator, CommandQueue& commandQueue)
+void Mesh::BuildBLAS(RenderContext& context)
 {
-    m_blas = std::make_unique<BLAS>(allocator, commandQueue);
+    m_blas = std::make_unique<BLAS>(context);
     std::vector<D3D12_RAYTRACING_GEOMETRY_DESC> geometries = { GetGeometryDesc() };
-    m_blas->Build(device, geometries);
+    m_blas->Build(context.device, geometries);
 }
 
 D3D12_VERTEX_BUFFER_VIEW Mesh::GetVertexBufferView() const
@@ -104,15 +97,15 @@ D3D12_INDEX_BUFFER_VIEW Mesh::GetIndexBufferView() const
     };
 }
 
-// TODO: implement transform, instanceID, hit group index
-D3D12_RAYTRACING_INSTANCE_DESC Mesh::GetInstanceDesc() const
+// TODO: implement instanceID, hit group index
+D3D12_RAYTRACING_INSTANCE_DESC Mesh::GetInstanceDesc(const UINT instanceId) const
 {
     D3D12_RAYTRACING_INSTANCE_DESC desc = {};
 	desc.AccelerationStructure = m_blas->GetResult()->GetGPUVirtualAddress();
     desc.Flags = D3D12_RAYTRACING_INSTANCE_FLAG_NONE;
     desc.InstanceMask = 0xFF;
-    desc.InstanceContributionToHitGroupIndex = 0;
-    desc.InstanceID = 0;
+    desc.InstanceContributionToHitGroupIndex = instanceId;
+    desc.InstanceID = instanceId;
 
     DirectX::XMMATRIX m = XMLoadFloat4x4(&m_transform);
     DirectX::XMMATRIX transposed = XMMatrixTranspose(m);

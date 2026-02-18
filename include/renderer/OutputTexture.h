@@ -8,7 +8,7 @@ class GPUAllocator;
 class OutputTexture
 {
 public:
-    OutputTexture(ID3D12Device* device, GPUAllocator& allocator, DescriptorHeap& descriptorHeap, DXGI_FORMAT format, int width, int height, std::wstring name);
+    OutputTexture(RenderContext& context, DXGI_FORMAT format, int width, int height, std::wstring name);
     ~OutputTexture();
 
     void Resize(ID3D12Device* device, uint32_t width, uint32_t height);
@@ -23,8 +23,7 @@ public:
 private:
     void Create(ID3D12Device* device, uint32_t width, uint32_t height);
 
-    GPUAllocator& m_allocator;
-    DescriptorHeap& m_descriptorHeap;
+    RenderContext& m_context;
     GPUBuffer m_resource;
     DescriptorHeap::Allocation m_uav;
     DescriptorHeap::Allocation m_srv;

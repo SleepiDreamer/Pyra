@@ -1,5 +1,6 @@
 #pragma once
 #include "GPUBuffer.h"
+#include "DescriptorHeap.h"
 
 #include <DirectXMath.h>
 #include <string>
@@ -13,6 +14,7 @@ struct Vertex
 
 class CommandQueue;
 class GPUAllocator;
+class UploadContext;
 class BLAS;
 
 class Mesh
@@ -26,12 +28,10 @@ public:
     Mesh(Mesh&& other) noexcept;
     Mesh& operator=(Mesh&& other) noexcept;
 
-    void Upload(const GPUAllocator& allocator,
-		        const std::vector<Vertex>& vertices,
-		        const std::vector<uint32_t>& indices,
-		        const std::string& name);
+    void Upload(const RenderContext& context, const std::vector<Vertex>& vertices, 
+				const std::vector<uint32_t>& indices, const std::string& name);
 
-    void BuildBLAS(ID3D12Device10* device, GPUAllocator& allocator, CommandQueue& commandQueue);
+    void BuildBLAS(RenderContext& context);
 
     [[nodiscard]] D3D12_RAYTRACING_GEOMETRY_DESC GetGeometryDesc() const;
     [[nodiscard]] ID3D12Resource* GetVertexBuffer() const { return m_vertexBuffer.resource; }
@@ -40,7 +40,7 @@ public:
     [[nodiscard]] uint32_t GetIndexCount() const { return m_indexCount; }
     [[nodiscard]] D3D12_VERTEX_BUFFER_VIEW GetVertexBufferView() const;
     [[nodiscard]] D3D12_INDEX_BUFFER_VIEW GetIndexBufferView() const;
-	[[nodiscard]] D3D12_RAYTRACING_INSTANCE_DESC GetInstanceDesc() const;
+	[[nodiscard]] D3D12_RAYTRACING_INSTANCE_DESC GetInstanceDesc(UINT instanceId) const;
 
     int32_t m_materialIndex = -1;
     DirectX::XMFLOAT4X4 m_transform;
@@ -51,4 +51,9 @@ private:
     uint32_t m_vertexCount = 0;
     uint32_t m_indexCount = 0;
     std::unique_ptr<BLAS> m_blas = nullptr;
+
+    DescriptorHeap::Allocation m_vertexSRV;
+    DescriptorHeap::Allocation m_indexSRV;
+    uint32_t m_vertexSRVIndex = 0;  // index into descriptor heap
+    uint32_t m_indexSRVIndex = 0;
 };

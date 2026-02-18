@@ -113,9 +113,13 @@ D3D12_RAYTRACING_INSTANCE_DESC Mesh::GetInstanceDesc() const
     desc.InstanceMask = 0xFF;
     desc.InstanceContributionToHitGroupIndex = 0;
     desc.InstanceID = 0;
-	desc.Transform[0][0] = 1.0f;
-	desc.Transform[1][1] = 1.0f;
-	desc.Transform[2][2] = 1.0f;
+
+    DirectX::XMMATRIX m = XMLoadFloat4x4(&m_transform);
+    DirectX::XMMATRIX transposed = XMMatrixTranspose(m);
+    DirectX::XMFLOAT4X4 t;
+    DirectX::XMStoreFloat4x4(&t, transposed);
+
+    memcpy(desc.Transform, &t, sizeof(desc.Transform));
 
     return desc;
 }

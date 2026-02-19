@@ -134,7 +134,8 @@ void Renderer::Render(const float deltaTime)
 		commandList->CopyResource(backBuffer, m_rtOutputTexture->GetResource());
 		m_swapChain->Transition(commandList.Get(), D3D12_RESOURCE_STATE_PRESENT);
 
-		m_commandQueue->ExecuteCommandList(commandList);
+		m_fenceValues[backBufferIndex] = m_commandQueue->ExecuteCommandList(commandList);
 		m_swapChain->Present();
+		m_commandQueue->WaitForFenceValue(m_fenceValues[m_swapChain->GetCurrentBackBufferIndex()]);
 	}
 }

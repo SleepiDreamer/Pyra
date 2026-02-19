@@ -1,4 +1,6 @@
-float LinearToSrgb(float linear)
+module helpers;
+
+public float LinearToSrgb(float linear)
 {
     if (linear <= 0.0031308)
         return linear * 12.92;
@@ -6,12 +8,12 @@ float LinearToSrgb(float linear)
         return 1.055 * pow(linear, 1.0 / 2.4) - 0.055;
 }
 
-float3 LinearToSrgb(float3 linear)
+public float3 LinearToSrgb(float3 linear)
 {
     return float3(LinearToSrgb(linear.r), LinearToSrgb(linear.g), LinearToSrgb(linear.b));
 }
 
-float SrgbToLinear(float srgb)
+public float SrgbToLinear(float srgb)
 {
     if (srgb <= 0.04045)
         return srgb / 12.92;
@@ -19,7 +21,7 @@ float SrgbToLinear(float srgb)
         return pow((srgb + 0.055) / 1.055, 2.4);
 }
 
-float3 SrgbToLinear(float3 srgb)
+public float3 SrgbToLinear(float3 srgb)
 {
     return float3(SrgbToLinear(srgb.r), SrgbToLinear(srgb.g), SrgbToLinear(srgb.b));
 }

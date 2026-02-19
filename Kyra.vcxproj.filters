@@ -214,6 +214,7 @@
     <None Include="shaders\raytracing.slang" />
     <None Include="shaders\structs.slang" />
     <None Include="shaders\helpers.slang" />
+    <None Include="shaders\camera.slang" />
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="external\glm\glm.natvis" />

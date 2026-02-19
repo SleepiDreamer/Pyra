@@ -1,11 +1,12 @@
-#include "structs.slang"
-#include "helpers.slang"
+import structs;
+import helpers;
+import camera;
 
 uniform RWTexture2D outputTexture : register(u0, space0);
 uniform RaytracingAccelerationStructure sceneBVH : register(t0, space0);
 StructuredBuffer<Material> materials : register(t1, space0);
 SamplerState linearSampler : register(s0, space0);
-uniform Camera camera : register(b0, space0);
+uniform CameraData camera : register(b0, space0);
 
 StructuredBuffer<Vertex> vertices : register(t0, space1);
 StructuredBuffer<uint> indices : register(t1, space1);
@@ -14,31 +15,17 @@ cbuffer HitGroupConstants : register(b0, space1)
     uint materialIndex;
 };
 
-float3 PinholeCamera(float2 uv, Camera camera)
-{
-    float2 ndc = (uv * 2.0f) - 1.0f;
-    float2 resolution = DispatchRaysDimensions().xy;
-    float aspectRatio = resolution.x / resolution.y;
-
-    float x = ndc.x * aspectRatio * tan(radians(camera.fov) * 0.5);
-    float y = -ndc.y * tan(radians(camera.fov) * 0.5);
-
-    float3 rayDir = normalize(float3(x, y, 1.0));
-
-    float3 rotatedRayDir = rayDir.x * camera.right + rayDir.y * camera.up + rayDir.z * camera.forward;
-
-    return normalize(rotatedRayDir);
-}
-
 [shader("raygeneration")]
 void RayGen()
 {
     uint2 idx = DispatchRaysIndex().xy;
     float2 uv = (float2(idx) + 0.5) / DispatchRaysDimensions().xy;
 
+    Camera cam;
+
     RayDesc ray;
     ray.Origin = camera.position;
-    ray.Direction = PinholeCamera(uv, camera);
+    ray.Direction = cam.PinholeCamera(uv, camera);
     ray.TMin = 0.0;
     ray.TMax = 1000.0;
 

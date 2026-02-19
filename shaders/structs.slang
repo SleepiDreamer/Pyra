@@ -1,35 +1,37 @@
-struct Vertex
-{
-    float3 position;
-    float3 normal;
-    float2 uv;
-}
+module structs;
 
-struct Camera
+public struct Vertex
 {
-    float3 position;
-    float fov;
-    float3 forward;
+    public float3 position;
+    public float3 normal;
+    public float2 uv;
+};
+
+public struct CameraData
+{
+    public float3 position;
+    public float fov;
+    public float3 forward;
     uint _pad0;
-    float3 right;
+    public float3 right;
     uint _pad1;
-    float3 up;
+    public float3 up;
     uint _pad2;
-}
+};
 
-struct Material
+public struct Material
 {
-    float3 albedoFactor;
-    int albedoIndex;
-    float metallicFactor;
-    float roughnessFactor;
-    int metallicRoughnessIndex;
-    int normalIndex;
-    int emissiveIndex;
+    public float3 albedoFactor;
+    public int albedoIndex;
+    public float metallicFactor;
+    public float roughnessFactor;
+    public int metallicRoughnessIndex;
+    public int normalIndex;
+    public int emissiveIndex;
     int _pad0;
 };
 
-struct [raypayload] Payload
+public struct [raypayload] Payload
 {
-    float3 color : read(caller) : write(caller, closesthit, miss);
+    public float3 color : read(caller) : write(caller, closesthit, miss);
 };

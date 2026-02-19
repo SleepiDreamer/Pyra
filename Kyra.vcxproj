@@ -87,6 +87,7 @@
     <ClCompile Include="source\renderer\Texture.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="shaders\camera.slang" />
     <None Include="shaders\helpers.slang" />
     <None Include="shaders\raytracing.slang">
       <FileType>Document</FileType>

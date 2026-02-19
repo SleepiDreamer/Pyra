@@ -6,7 +6,8 @@ uniform RWTexture2D outputTexture : register(u0, space0);
 uniform RaytracingAccelerationStructure sceneBVH : register(t0, space0);
 StructuredBuffer<Material> materials : register(t1, space0);
 SamplerState linearSampler : register(s0, space0);
-uniform CameraData camera : register(b0, space0);
+ConstantBuffer<CameraData> camera : register(b0, space0);
+ConstantBuffer<RenderSettings> settings : register(b1, space0);
 
 StructuredBuffer<Vertex> vertices : register(t0, space1);
 StructuredBuffer<uint> indices : register(t1, space1);
@@ -52,19 +53,78 @@ void ClosestHit(inout Payload payload, in BuiltInTriangleIntersectionAttributes 
 
     Material material = materials[materialIndex];
 
-    DescriptorHandle<Texture2D> albedoHandle = DescriptorHandle<Texture2D>(uint2(material.albedoIndex, 0));
-    Texture2D albedoTex = albedoHandle;
-    float3 albedo;
+    float3 albedo = 0;
     if (material.albedoIndex != -1)
     {
+        DescriptorHandle<Texture2D> albedoHandle = DescriptorHandle<Texture2D>(uint2(material.albedoIndex, 0));
+        Texture2D albedoTex = albedoHandle;
         albedo = albedoTex.SampleLevel(linearSampler, uv, 0).rgb * material.albedoFactor;
     }
     else
     {
         albedo = material.albedoFactor;
     }
+    float3 emissive = 0;
+    if (material.emissiveIndex != -1)
+    {
+        DescriptorHandle<Texture2D> emissiveHandle = DescriptorHandle<Texture2D>(uint2(material.emissiveIndex, 0));
+        Texture2D emissiveTex = emissiveHandle;
+        emissive = emissiveTex.SampleLevel(linearSampler, uv, 0).rgb; // TODO: no emissive factor?
+    }
+    float roughness = 0;
+    float metallic = 0;
+    if (material.metallicRoughnessIndex != -1)
+    {
+        DescriptorHandle<Texture2D> metallicRoughnessHandle = DescriptorHandle<Texture2D>(uint2(material.metallicRoughnessIndex, 0));
+        Texture2D metallicRoughnessTex = metallicRoughnessHandle;
+        float2 metallicRoughness = metallicRoughnessTex.SampleLevel(linearSampler, uv, 0).gb;
+        roughness = metallicRoughness.x * material.roughnessFactor;
+        metallic = metallicRoughness.y * material.metallicFactor;
+    }
+    else
+    {
+        roughness = material.roughnessFactor;
+        metallic = material.metallicFactor;
+    }
 
+
+    if (settings.whiteFurnace) albedo = float3(1);
     payload.color = albedo;
+    
+    switch (settings.debugMode)
+    {
+    case DebugMode::None:
+    {
+        break;
+    }
+    case DebugMode::Albedo:
+    {
+        payload.color = albedo;
+        return;
+    }
+    case DebugMode::Emissive:
+    {
+        payload.color = emissive;
+        return;
+    }
+    case DebugMode::Metallic:
+    {
+        payload.color = metallic;
+        return;
+    }
+    case DebugMode::Roughness:
+    {
+        payload.color = roughness;
+        return;
+    }
+    case DebugMode::Normal:
+    {
+        payload.color = 1;
+        return;
+        break;
+    }
+    }
+
 }
 
 [shader("miss")]

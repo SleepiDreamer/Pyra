@@ -49,13 +49,15 @@ Renderer::Renderer(Window& window, bool debug)
 	m_rootSignature->AddDescriptorTable(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 1, 0, 0, "outputTexture"); // u0:0 RT output
 	m_rootSignature->AddRootSRV(0, 0, "sceneBVH");	// t0:0 TLAS
 	m_rootSignature->AddRootSRV(1, 0, "materials"); // t1:0 materials
-	m_rootSignature->AddRootCBV(0, 0, "camera");	// b0:0 Camera
+	m_rootSignature->AddRootCBV(0, 0, "camera");	// b0:0 camera
+	m_rootSignature->AddRootCBV(1, 0, "renderSettings");// b1:0 render settings
 	m_rootSignature->AddStaticSampler(0);			// s0:0 linear sampler
 	m_rootSignature->Build(device, L"RT Root Signature");
 
 	m_rtPipeline = std::make_unique<RTPipeline>(device, m_rootSignature->Get(), *m_shaderCompiler, m_scene->GetHitGroupRecords(), "shaders/raytracing.slang");
 
 	m_cameraCB = std::make_unique<CBVBuffer<CameraData>>(*m_allocator, "Camera CB");
+	m_renderSettingsCB = std::make_unique<CBVBuffer<RenderSettings>>(*m_allocator, "Render Settings CB");
 
 	m_commandQueue->ExecuteCommandList(commandList);
 	m_commandQueue->Flush();
@@ -130,10 +132,27 @@ void Renderer::Render(const float deltaTime)
 
 	// ImGui window
 	{
+		auto config = ImSettings();
+		config.push<float>()
+			.as_drag()
+			.min(0)
+			.max(10)
+			.speed(0.02f)
+			.pop();
+		config.push_member<&RenderSettings::debugMode>()
+			.push_member<&RenderSettings::whiteFurnace>()
+			.as_input()
+			.pop();
+
 		ImGui::Begin("Debug");
 		ImGui::Text("FPS: %.1f", ImGui::GetIO().Framerate);
+		ImGui::Text("Frame: %d", m_renderSettings.frame);
+		ImReflect::Input("Render Settings", m_renderSettings, config);
 		ImGui::End();
 	}
+
+	m_renderSettings.frame++;
+	m_renderSettingsCB->Update(backBufferIndex, m_renderSettings);
 
 	// Record commands
 	{
@@ -148,6 +167,7 @@ void Renderer::Render(const float deltaTime)
 		m_rootSignature->SetDescriptorTable(commandList.Get(), m_rtOutputTexture->GetUAV().gpuHandle, "outputTexture");
 		m_rootSignature->SetRootSRV(commandList.Get(), m_scene->GetTLASAddress(), "sceneBVH");
 		m_rootSignature->SetRootCBV(commandList.Get(), m_cameraCB->GetGPUAddress(backBufferIndex), "camera");
+		m_rootSignature->SetRootCBV(commandList.Get(), m_renderSettingsCB->GetGPUAddress(backBufferIndex), "renderSettings");
 		m_rootSignature->SetRootSRV(commandList.Get(), m_scene->GetMaterialsBufferAddress(), "materials");
 
 		auto dispatchDesc = m_rtPipeline->GetDispatchRaysDesc();

@@ -19,6 +19,28 @@ public struct CameraData
     uint _pad2;
 };
 
+public enum DebugMode
+{
+    None = 0,
+    Albedo = 1,
+    Emissive = 2,
+    Metallic = 3,
+    Roughness = 4,
+    Normal = 5
+};
+
+public struct RenderSettings
+{
+    public DebugMode debugMode;
+    public uint bounces;
+    public float exposure;
+    public float skyExposure;
+    public float lightExposure;
+    public bool whiteFurnace;
+    public uint frame;
+    uint _pad0;
+};
+
 public struct Material
 {
     public float3 albedoFactor;

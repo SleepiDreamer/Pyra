@@ -26,6 +26,9 @@ public:
 	[[nodiscard]] ID3D12DescriptorHeap* GetHeap() const { return m_heap.Get(); }
 	[[nodiscard]] D3D12_CPU_DESCRIPTOR_HANDLE GetCPUHandle(const UINT index) const { return { m_cpuStart.ptr + index * m_incrementSize }; }
 	[[nodiscard]] D3D12_GPU_DESCRIPTOR_HANDLE GetGPUHandle(const UINT index) const { return { m_gpuStart.ptr + index * m_incrementSize }; }
+	[[nodiscard]] D3D12_CPU_DESCRIPTOR_HANDLE GetCPUStartHandle() const { return m_cpuStart; }
+	[[nodiscard]] D3D12_GPU_DESCRIPTOR_HANDLE GetGPUStartHandle() const { return m_gpuStart; }
+	[[nodiscard]] UINT GetIncrementSize() const { return m_incrementSize; }
 
 private:
 	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> m_heap;

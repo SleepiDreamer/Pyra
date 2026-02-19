@@ -20,6 +20,7 @@ class OutputTexture;
 class ShaderCompiler;
 class RootSignature;
 class RTPipeline;
+class ImGuiWrapper;
 class Scene;
 template<typename T>
 class CBVBuffer;
@@ -52,6 +53,7 @@ private:
 	std::unique_ptr<ShaderCompiler> m_shaderCompiler;
 	std::unique_ptr<RootSignature> m_rootSignature;
 	std::unique_ptr<RTPipeline> m_rtPipeline;
+	std::unique_ptr<ImGuiWrapper> m_imgui = nullptr;
 
 	//std::unique_ptr<Model> m_model;
 	//std::unique_ptr<TLAS> m_tlas;

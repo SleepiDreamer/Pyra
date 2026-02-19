@@ -8,7 +8,7 @@
 
 Application::Application(const bool debugLayer)
 {
-	m_window = std::make_unique<Window>(1920, 1080);
+	m_window = std::make_unique<Window>(2560, 1440);
 	m_renderer = std::make_unique<Renderer>(*m_window, debugLayer);
 	m_camera = std::make_shared<Camera>();
 	m_camera->SetPosition(glm::vec3(0.0f, 0.0f, 2.0f));

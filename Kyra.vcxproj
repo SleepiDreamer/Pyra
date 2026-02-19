@@ -19,6 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="include\renderer\ImGuiWrapper.h" />
     <ClInclude Include="include\Camera.h" />
     <ClInclude Include="external\D3D12MA\D3D12MemAlloc.h" />
     <ClInclude Include="external\fastgltf\base64.hpp" />
@@ -57,6 +58,13 @@
     <ClInclude Include="include\renderer\Texture.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="external\imgui\backends\imgui_impl_dx12.cpp" />
+    <ClCompile Include="external\imgui\backends\imgui_impl_glfw.cpp" />
+    <ClCompile Include="external\imgui\imgui.cpp" />
+    <ClCompile Include="external\imgui\imgui_draw.cpp" />
+    <ClCompile Include="external\imgui\imgui_tables.cpp" />
+    <ClCompile Include="external\imgui\imgui_widgets.cpp" />
+    <ClCompile Include="source\renderer\ImGuiWrapper.cpp" />
     <ClCompile Include="source\Camera.cpp" />
     <ClCompile Include="external\D3D12MA\D3D12MemAlloc.cpp" />
     <ClCompile Include="external\fastgltf\base64.cpp" />
@@ -184,7 +192,7 @@
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>$(ProjectDir)external;$(ProjectDir)external\GLFW;$(ProjectDir)external\D3D12;$(ProjectDir)external\D3D12MA;$(ProjectDir)external\slang;$(ProjectDir)external\simdjson;$(ProjectDir)external\stb;$(ProjectDir)include;$(ProjectDir)include\renderer;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)external;$(ProjectDir)external\GLFW;$(ProjectDir)external\D3D12;$(ProjectDir)external\D3D12MA;$(ProjectDir)external\slang;$(ProjectDir)external\simdjson;$(ProjectDir)external\stb;$(ProjectDir)external\imgui;$(ProjectDir)include;$(ProjectDir)include\renderer;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions>/DNOMINMAX %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>

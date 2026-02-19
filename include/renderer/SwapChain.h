@@ -22,6 +22,7 @@ public:
 	[[nodiscard]] DescriptorHeap::Allocation GetCurrentBackBufferRtv() const { return m_backBufferRtvs[m_currentBackBufferIndex]; }
 	[[nodiscard]] D3D12_VIEWPORT GetViewport() const { return m_viewport; }
 	[[nodiscard]] D3D12_RECT GetScissorRect() const { return m_scissorRect; }
+	[[nodiscard]] DXGI_FORMAT GetFormat() const { return m_format; }
 
 	void ToggleFullscreen();
 	void CreateBackBuffers(ID3D12Device* device);

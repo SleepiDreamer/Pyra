@@ -10,7 +10,7 @@ class Window
 public:
 	Window(int width, int height, const char* title = "Kyra");
 	~Window() = default;
-	
+
 	[[nodiscard]] GLFWwindow* GetGLFWWindow() const { return m_window; }
 	[[nodiscard]] HWND GetHWND() const { return m_hwnd; }
 	[[nodiscard]] int GetWidth() const { return m_width; }

@@ -12,9 +12,11 @@
 #include "ShaderCompiler.h"
 #include "RootSignature.h"
 #include "RTPipeline.h"
+#include "ImGuiWrapper.h"
 #include "Scene.h"
 #include "CommonDX.h"
 
+#include <imgui.h>
 #include <iostream>
 
 using namespace Microsoft::WRL;
@@ -33,6 +35,7 @@ Renderer::Renderer(Window& window, bool debug)
 	m_context = { device, m_allocator.get(), m_commandQueue.get(), m_descriptorHeap.get(), m_uploadContext.get() };
 
 	m_swapChain = std::make_unique<SwapChain>(window, device, m_device->GetAdapter(), m_commandQueue.get());
+	m_imgui = std::make_unique<ImGuiWrapper>(window, m_context, m_swapChain->GetFormat(), NUM_FRAMES_IN_FLIGHT);
 
 	m_scene = std::make_unique<Scene>(m_context);
 
@@ -120,8 +123,16 @@ void Renderer::Render(const float deltaTime)
 
 	// Begin frame
 	{
+		m_imgui->BeginFrame();
 		m_rtOutputTexture->Transition(commandList.Get(), D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
 		m_swapChain->Transition(commandList.Get(), D3D12_RESOURCE_STATE_RENDER_TARGET);
+	}
+
+	// ImGui window
+	{
+		ImGui::Begin("Debug");
+		ImGui::Text("FPS: %.1f", ImGui::GetIO().Framerate);
+		ImGui::End();
 	}
 
 	// Record commands
@@ -150,6 +161,22 @@ void Renderer::Render(const float deltaTime)
 		m_rtOutputTexture->Transition(commandList.Get(), D3D12_RESOURCE_STATE_COPY_SOURCE);
 		m_swapChain->Transition(commandList.Get(), D3D12_RESOURCE_STATE_COPY_DEST);
 		commandList->CopyResource(backBuffer, m_rtOutputTexture->GetResource());
+
+		// ImGui
+		{
+			m_swapChain->Transition(commandList.Get(), D3D12_RESOURCE_STATE_RENDER_TARGET);
+
+			D3D12_CPU_DESCRIPTOR_HANDLE rtv = m_swapChain->GetCurrentBackBufferRtv().cpuHandle;
+			commandList->OMSetRenderTargets(1, &rtv, FALSE, nullptr);
+
+			ID3D12DescriptorHeap* heaps[] = { m_descriptorHeap->GetHeap() };
+			commandList->SetDescriptorHeaps(1, heaps);
+
+			m_imgui->EndFrame(commandList.Get());
+
+			m_swapChain->Transition(commandList.Get(), D3D12_RESOURCE_STATE_PRESENT);
+		}
+
 		m_swapChain->Transition(commandList.Get(), D3D12_RESOURCE_STATE_PRESENT);
 
 		m_fenceValues[backBufferIndex] = m_commandQueue->ExecuteCommandList(commandList);

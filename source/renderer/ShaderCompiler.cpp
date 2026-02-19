@@ -18,11 +18,11 @@ ShaderCompiler::ShaderCompiler()
 
 ShaderCompiler::~ShaderCompiler() = default;
 
-void diagnoseIfNeeded(slang::IBlob* diagnosticsBlob)
+static void diagnoseIfNeeded(slang::IBlob* diagnosticsBlob)
 {
     if (diagnosticsBlob != nullptr)
     {
-	    std::cerr << static_cast<const char*>(diagnosticsBlob->getBufferPointer()) << std::endl;
+	    std::cerr << static_cast<const char*>(diagnosticsBlob->getBufferPointer()) << "\n";
     }
 }
 

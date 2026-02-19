@@ -13,10 +13,11 @@ public:
 
     void Rebuild(ID3D12Device10* device, const std::vector<HitGroupRecord>& records);
     void RebuildShaderTables(ID3D12Device10* device, const std::vector<HitGroupRecord>& records);
-    bool CheckHotReload(ID3D12Device10* device, CommandQueue& commandQueue, const std::vector<HitGroupRecord>& records);
-    D3D12_DISPATCH_RAYS_DESC GetDispatchRaysDesc() const;
-    ID3D12StateObject* GetPSO() const { return m_pso.Get(); }
-
+	bool CheckHotReload(ID3D12Device10* device, CommandQueue& commandQueue, const std::vector<HitGroupRecord>& records);
+    
+	[[nodiscard]] D3D12_DISPATCH_RAYS_DESC GetDispatchRaysDesc() const;
+    [[nodiscard]] ID3D12StateObject* GetPSO() const { return m_pso.Get(); }
+    [[nodiscard]] bool IsLastCompileSuccesful() const;
 private:
     void CreateLocalRootSignature(ID3D12Device10* device);
     void CreatePSO(ID3D12Device10* device);
@@ -35,5 +36,5 @@ private:
     UINT m_hitGroupRecordSize = 0;
     UINT m_hitGroupCount = 0;
 
-    std::unique_ptr<Shader> m_shaderLibrary;
+    std::unique_ptr<Shader> m_shader;
 };

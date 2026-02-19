@@ -18,6 +18,7 @@ public:
     [[nodiscard]] D3D12_SHADER_BYTECODE GetBytecode() const;
     [[nodiscard]] const std::vector<uint8_t>& GetBlob() const { return m_blob; }
     [[nodiscard]] bool IsValid() const { return !m_blob.empty(); }
+	[[nodiscard]] bool LastCompileFailed() const { return m_lastCompileFailed; }
 
 private:
     ShaderCompiler& m_compiler;
@@ -25,4 +26,5 @@ private:
     std::vector<std::string> m_entryPoints;
     std::vector<uint8_t> m_blob;
     std::filesystem::file_time_type m_lastWriteTime;
+	bool m_lastCompileFailed = false;
 };

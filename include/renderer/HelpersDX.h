@@ -1,5 +1,6 @@
 #pragma once
 #include <d3dx12.h>
+#include <glm/vec2.hpp>
 #include <iostream>
 #include <stdexcept>
 
@@ -42,4 +43,34 @@ inline std::wstring ToWideString(const char* str)
     std::wstring wstr(len - 1, L'\0');
     MultiByteToWideChar(CP_UTF8, 0, str, -1, wstr.data(), len);
     return wstr;
+}
+
+inline void tag_invoke(ImReflect::ImInput_t, const char* label, BOOL& value, ImSettings& settings, ImResponse& response) {
+    auto& bool_response = response.get<BOOL>();
+
+    bool temp = static_cast<bool>(value);
+    if (ImGui::Checkbox(label, &temp)) {
+        value = temp ? TRUE : FALSE;
+        bool_response.changed();
+    }
+
+    ImReflect::Detail::check_input_states(bool_response);
+}
+
+inline void tag_invoke(ImReflect::ImInput_t, const char* label, glm::vec3& value, ImSettings& settings, ImResponse& response) {
+    auto& vec3_response = response.get<glm::vec3>();
+
+    bool changed = ImGui::InputFloat3(label, &value.x);
+    if (changed) vec3_response.changed();
+
+    ImReflect::Detail::check_input_states(vec3_response);
+}
+
+inline void tag_invoke(ImReflect::ImInput_t, const char* label, glm::vec2& value, ImSettings& settings, ImResponse& response) {
+    auto& vec2_response = response.get<glm::vec2>();
+
+    bool changed = ImGui::InputFloat2(label, &value.x);
+    if (changed) vec2_response.changed();
+
+    ImReflect::Detail::check_input_states(vec2_response);
 }

@@ -87,7 +87,6 @@ void ClosestHit(inout Payload payload, in BuiltInTriangleIntersectionAttributes 
         metallic = material.metallicFactor;
     }
 
-
     if (settings.whiteFurnace) albedo = float3(1);
     payload.color = albedo;
     

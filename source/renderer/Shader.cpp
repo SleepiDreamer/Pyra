@@ -35,11 +35,15 @@ bool Shader::Reload()
 
     if (!result.success)
     {
-        ThrowError("Failed to compile shader: " + m_filePath + "\n" + result.errorLog);
+        std::cerr << "Failed to compile shader: " << m_filePath << "\n" << result.errorLog << "\n";
+        m_lastWriteTime = std::filesystem::last_write_time(m_filePath);
+		m_lastCompileFailed = true;
+        return false;
     }
 
     m_blob = std::move(result.blob);
     m_lastWriteTime = std::filesystem::last_write_time(m_filePath);
+	m_lastCompileFailed = false;
     return true;
 }
 

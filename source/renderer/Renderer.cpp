@@ -132,16 +132,22 @@ void Renderer::Render(const float deltaTime)
 
 	// ImGui window
 	{
+		if (!m_rtPipeline->IsLastCompileSuccesful())
+		{
+			ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(1.0f, 0.0f, 0.0f, 0.5f));
+			ImGui::Begin("Border", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize);
+			ImGui::SetWindowPos(ImVec2(0, 0));
+			ImGui::SetWindowSize(ImGui::GetIO().DisplaySize);
+			ImGui::End();
+			ImGui::PopStyleColor();
+		}
+
 		auto config = ImSettings();
 		config.push<float>()
 			.as_drag()
 			.min(0)
 			.max(10)
 			.speed(0.02f)
-			.pop();
-		config.push_member<&RenderSettings::debugMode>()
-			.push_member<&RenderSettings::whiteFurnace>()
-			.as_input()
 			.pop();
 
 		ImGui::Begin("Debug");

@@ -13,8 +13,8 @@ RTPipeline::RTPipeline(ID3D12Device10* device, ID3D12RootSignature* rootSignatur
 	: m_rootSignature(rootSignature)
 {
 	std::vector<std::string> entryPoints = {};
-    m_shaderLibrary = std::make_unique<Shader>(compiler, shaderPath, entryPoints);
-    if (!m_shaderLibrary->IsValid())
+    m_shader = std::make_unique<Shader>(compiler, shaderPath, entryPoints);
+    if (!m_shader->IsValid())
     {
         ThrowError("Failed to compile RT shaders: " + shaderPath);
     }
@@ -25,6 +25,11 @@ RTPipeline::RTPipeline(ID3D12Device10* device, ID3D12RootSignature* rootSignatur
 }
 
 RTPipeline::~RTPipeline() = default;
+
+bool RTPipeline::IsLastCompileSuccesful() const
+{
+	return !m_shader->LastCompileFailed();
+}
 
 void RTPipeline::CreateLocalRootSignature(ID3D12Device10* device)
 {
@@ -46,7 +51,7 @@ void RTPipeline::CreatePSO(ID3D12Device10* device)
     CD3DX12_STATE_OBJECT_DESC psoDesc(D3D12_STATE_OBJECT_TYPE_RAYTRACING_PIPELINE);
 
     auto lib = psoDesc.CreateSubobject<CD3DX12_DXIL_LIBRARY_SUBOBJECT>();
-    auto bytecode = m_shaderLibrary->GetBytecode();
+    auto bytecode = m_shader->GetBytecode();
     lib->SetDXILLibrary(&bytecode);
 
     // Hit group
@@ -167,10 +172,12 @@ void RTPipeline::RebuildShaderTables(ID3D12Device10* device, const std::vector<H
 
 bool RTPipeline::CheckHotReload(ID3D12Device10* device, CommandQueue& commandQueue, const std::vector<HitGroupRecord>& records)
 {
-    if (!m_shaderLibrary->NeedsReload())
-        return false;
+    if (!m_shader->NeedsReload())
+    {
+	    return false;
+    }
 
-    if (!m_shaderLibrary->Reload())
+    if (!m_shader->Reload())
     {
         std::cerr << "[RTPipeline] Hot reload failed, keeping previous shaders\n";
         return false;

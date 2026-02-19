@@ -247,6 +247,10 @@
     <None Include="shaders\random\xxhash32.slang" />
     <None Include="shaders\settings.slang" />
     <None Include="shaders\random\sampling.slang" />
+    <None Include="shaders\tonemapping.slang" />
+    <None Include="shaders\tonemapping\aces.slang" />
+    <None Include="shaders\tonemapping\agx.slang" />
+    <None Include="shaders\tonemapping\reinhard.slang" />
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="external\glm\glm.natvis" />

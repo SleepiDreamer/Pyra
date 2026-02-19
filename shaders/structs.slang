@@ -41,6 +41,14 @@ public enum DebugMode
     Normal = 5
 };
 
+public enum TonemapOperator
+{
+    Linear = 0,
+    Aces = 1,
+    Reinhard = 2,
+    AgX = 3
+};
+
 public struct RenderSettings
 {
     public DebugMode debugMode;
@@ -49,7 +57,9 @@ public struct RenderSettings
     public float skyExposure;
     public float lightExposure;
     public bool whiteFurnace;
+    public bool upscaling;
     public uint frame;
+    public TonemapOperator tonemapper;
     uint _pad0;
 };
 

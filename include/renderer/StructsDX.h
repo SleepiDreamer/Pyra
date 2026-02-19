@@ -49,15 +49,25 @@ enum DebugMode
 	Normal = 5
 };
 
+enum TonemapOperator
+{
+	Linear = 0,
+	Aces = 1,
+	Reinhard = 2,
+	AgX = 3
+};
+
 struct RenderSettings
 {
-	DebugMode debugMode = DebugMode::None;
+	DebugMode debugMode = None;
 	uint32_t bounces = 2;
 	float exposure = 1.0f;
 	float skyExposure = 1.0f;
 	float lightExposure = 1.0f;
 	BOOL whiteFurnace = false;
+	BOOL upscaling = false;
 	uint32_t frame = 0;
-	uint32_t _pad0 = 0;
+	TonemapOperator tonemapper = AgX;
+	uint32_t _pad0;
 };
-IMGUI_REFLECT(RenderSettings, debugMode, bounces, exposure, skyExposure, lightExposure, whiteFurnace)
+IMGUI_REFLECT(RenderSettings, debugMode, bounces, exposure, skyExposure, lightExposure, whiteFurnace, upscaling, tonemapper)

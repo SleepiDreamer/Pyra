@@ -24,10 +24,8 @@ using namespace Microsoft::WRL;
 
 // TODO
 // - normal mapping/Mikkt
-// - path tracing
 // - explicit lights
 // - HDRI
-// - tonemapping
 // - DLSS SR & RR
 
 Renderer::Renderer(Window& window, bool debug)
@@ -48,14 +46,16 @@ Renderer::Renderer(Window& window, bool debug)
 
 	m_scene = std::make_unique<Scene>(m_context);
 
-	const int width = window.GetWidth();
-	const int height = window.GetHeight();
-	m_rtOutputTexture = std::make_unique<OutputTexture>(m_context, DXGI_FORMAT_R10G10B10A2_UNORM, width, height, L"RT Output Texture");
-
 	m_shaderCompiler = std::make_unique<ShaderCompiler>();
 
+	const int width = window.GetWidth();
+	const int height = window.GetHeight();
+	m_rtOutputBuffer = std::make_unique<OutputBuffer>(m_context, DXGI_FORMAT_R10G10B10A2_UNORM, width, height, L"RT Output Buffer");
+	m_accumulationBuffer = std::make_unique<OutputBuffer>(m_context, DXGI_FORMAT_R10G10B10A2_UNORM, width, height, L"Accumulation Buffer");
+
 	m_rootSignature = std::make_unique<RootSignature>();
-	m_rootSignature->AddDescriptorTable(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 1, 0, 0, "outputTexture"); // u0:0 RT output
+	m_rootSignature->AddDescriptorTable(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 1, 0, 0, "outputBuffer");			// u0:0 RT output
+	m_rootSignature->AddDescriptorTable(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 1, 1, 0, "accumulationBuffer");	// u1:0 accumulation buffer
 	m_rootSignature->AddRootSRV(0, 0, "sceneBVH");	// t0:0 TLAS
 	m_rootSignature->AddRootSRV(1, 0, "materials"); // t1:0 materials
 	m_rootSignature->AddRootCBV(0, 0, "camera");	// b0:0 camera
@@ -104,7 +104,7 @@ void Renderer::Resize(const int width, const int height)
 	std::cout << "Window resized: " << width << "x" << height << "\n";
 	m_commandQueue->Flush();
 	m_swapChain->Resize(width, height, m_device->GetDevice());
-	m_rtOutputTexture->Resize(m_device->GetDevice(), width, height);
+	m_rtOutputBuffer->Resize(m_device->GetDevice(), width, height);
 }
 
 void Renderer::Render(const float deltaTime)
@@ -134,7 +134,7 @@ void Renderer::Render(const float deltaTime)
 	// Begin frame
 	{
 		m_imgui->BeginFrame();
-		m_rtOutputTexture->Transition(commandList.Get(), D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+		m_rtOutputBuffer->Transition(commandList.Get(), D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
 		m_swapChain->Transition(commandList.Get(), D3D12_RESOURCE_STATE_RENDER_TARGET);
 	}
 
@@ -183,7 +183,8 @@ void Renderer::Render(const float deltaTime)
 		commandList->SetComputeRootSignature(m_rootSignature->Get());
 		commandList->SetPipelineState1(m_rtPipeline->GetPSO());
 
-		m_rootSignature->SetDescriptorTable(commandList.Get(), m_rtOutputTexture->GetUAV().gpuHandle, "outputTexture");
+		m_rootSignature->SetDescriptorTable(commandList.Get(), m_rtOutputBuffer->GetUAV().gpuHandle, "outputBuffer");
+		m_rootSignature->SetDescriptorTable(commandList.Get(), m_accumulationBuffer->GetUAV().gpuHandle, "accumulationBuffer");
 		m_rootSignature->SetRootSRV(commandList.Get(), m_scene->GetTLASAddress(), "sceneBVH");
 		m_rootSignature->SetRootCBV(commandList.Get(), m_cameraCB->GetGPUAddress(backBufferIndex), "camera");
 		m_rootSignature->SetRootCBV(commandList.Get(), m_renderSettingsCB->GetGPUAddress(backBufferIndex), "renderSettings");
@@ -197,9 +198,9 @@ void Renderer::Render(const float deltaTime)
 
 	// End frame
 	{
-		m_rtOutputTexture->Transition(commandList.Get(), D3D12_RESOURCE_STATE_COPY_SOURCE);
+		m_rtOutputBuffer->Transition(commandList.Get(), D3D12_RESOURCE_STATE_COPY_SOURCE);
 		m_swapChain->Transition(commandList.Get(), D3D12_RESOURCE_STATE_COPY_DEST);
-		commandList->CopyResource(backBuffer, m_rtOutputTexture->GetResource());
+		commandList->CopyResource(backBuffer, m_rtOutputBuffer->GetResource());
 
 		// ImGui
 		{

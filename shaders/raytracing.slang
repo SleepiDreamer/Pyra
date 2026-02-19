@@ -4,8 +4,10 @@ import settings;
 import rng;
 import random.sampling;
 import camera;
+import tonemapping;
 
-uniform RWTexture2D outputTexture : register(u0, space0);
+uniform RWTexture2D outputBuffer : register(u0, space0);
+uniform RWTexture2D accumulationBuffer : register(u1, space0);
 uniform RaytracingAccelerationStructure sceneBVH : register(t0, space0);
 StructuredBuffer<Material> materials : register(t1, space0);
 SamplerState linearSampler : register(s0, space0);
@@ -81,7 +83,14 @@ void RayGen()
         payload.depth++;
     }
 
-    outputTexture[idx] = float4(LinearToSrgb(payload.radiance), 1.0);
+    if (renderSettings.upscaling)
+    {
+        // TODO: implement upscaling
+    }
+    else
+    {
+        outputBuffer[idx] = float4(LinearToSrgb(tonemap(payload.radiance, renderSettings.tonemapper, renderSettings.exposure)), 1.0);
+    }
 }
 
 [shader("closesthit")]

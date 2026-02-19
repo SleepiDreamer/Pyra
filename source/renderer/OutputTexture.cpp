@@ -1,13 +1,13 @@
 #include "OutputTexture.h"
 #include "GPUAllocator.h"
 
-OutputTexture::OutputTexture(RenderContext& context, const DXGI_FORMAT format, const int width, const int height, std::wstring name)
+OutputBuffer::OutputBuffer(RenderContext& context, const DXGI_FORMAT format, const int width, const int height, std::wstring name)
 	: m_context(context), m_format(format), m_name(std::move(name))
 {
     Create(m_context.device, width, height);
 }
 
-OutputTexture::~OutputTexture()
+OutputBuffer::~OutputBuffer()
 {
     if (m_initialized)
     {
@@ -16,7 +16,7 @@ OutputTexture::~OutputTexture()
     }
 }
 
-void OutputTexture::Create(ID3D12Device* device, const uint32_t width, const uint32_t height)
+void OutputBuffer::Create(ID3D12Device* device, const uint32_t width, const uint32_t height)
 {
     if (m_initialized)
     {
@@ -46,12 +46,12 @@ void OutputTexture::Create(ID3D12Device* device, const uint32_t width, const uin
     m_initialized = true;
 }
 
-void OutputTexture::Resize(ID3D12Device* device, const uint32_t width, const uint32_t height)
+void OutputBuffer::Resize(ID3D12Device* device, const uint32_t width, const uint32_t height)
 {
     Create(device, width, height);
 }
 
-void OutputTexture::Transition(ID3D12GraphicsCommandList* commandList, D3D12_RESOURCE_STATES newState) const
+void OutputBuffer::Transition(ID3D12GraphicsCommandList* commandList, D3D12_RESOURCE_STATES newState) const
 {
     if (newState != m_currentState)
     {

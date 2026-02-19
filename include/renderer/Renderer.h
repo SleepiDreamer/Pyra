@@ -17,7 +17,7 @@ class DescriptorHeap;
 class CommandList;
 class UploadContext;
 class GPUAllocator;
-class OutputTexture;
+class OutputBuffer;
 class ShaderCompiler;
 class RootSignature;
 class RTPipeline;
@@ -60,7 +60,9 @@ private:
 	std::unique_ptr<CBVBuffer<CameraData>> m_cameraCB;
 	RenderSettings m_renderSettings{};
 	std::unique_ptr<CBVBuffer<RenderSettings>> m_renderSettingsCB;
-	std::unique_ptr<OutputTexture> m_rtOutputTexture;
+
+	std::unique_ptr<OutputBuffer> m_rtOutputBuffer;
+	std::unique_ptr<OutputBuffer> m_accumulationBuffer;
 
 	float m_reloadTimer = 0.0f;
 };

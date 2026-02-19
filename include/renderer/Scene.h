@@ -6,6 +6,7 @@ class Model;
 class TLAS;
 class CommandQueue;
 class GPUAllocator;
+struct HitGroupRecord;
 
 class Scene
 {

@@ -8,6 +8,7 @@
 #include <filesystem>
 
 class GPUAllocator;
+struct MaterialData;
 
 class Model
 {

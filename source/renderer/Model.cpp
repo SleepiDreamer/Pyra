@@ -1,12 +1,14 @@
 #include "Model.h"
 #include "GPUAllocator.h"
 #include "CommandQueue.h"
+#include "StructsDX.h"
 
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 #include <fastgltf/glm_element_traits.hpp>
 #include <fastgltf/tools.hpp>
 #include <stdexcept>
+#include <vector>
 
 using namespace DirectX;
 
@@ -286,10 +288,12 @@ void Model::LoadMaterials(const fastgltf::Asset& asset)
             matData.emissiveIndex = m_textures[texIndex].GetDescriptorIndex();
         }
 
-        auto& factor = mat.pbrData.baseColorFactor;
-        matData.albedoFactor = { factor[0], factor[1], factor[2] };
+        auto& aFactor = mat.pbrData.baseColorFactor;
+        matData.albedoFactor = { aFactor[0], aFactor[1], aFactor[2] };
         matData.metallicFactor = mat.pbrData.metallicFactor;
         matData.roughnessFactor = mat.pbrData.roughnessFactor;
+		auto& eFactor = mat.emissiveFactor;
+		matData.emissiveFactor = { eFactor[0], eFactor[1], eFactor[2] };
 
         m_materials.push_back(matData);
     }

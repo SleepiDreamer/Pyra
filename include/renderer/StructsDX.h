@@ -14,6 +14,7 @@ struct CameraData
 	glm::vec3 up;
 	uint32_t _pad2;
 };
+IMGUI_REFLECT(CameraData, position, fov, forward, right, up)
 
 struct HitGroupRecord
 {
@@ -27,12 +28,14 @@ struct MaterialData
 {
 	glm::vec3 albedoFactor = glm::vec3(1.0f);
 	int32_t albedoIndex = -1;
+	glm::vec3 emissiveFactor = glm::vec3(1.0f);
+	int32_t emissiveIndex = -1;
 	float metallicFactor = 1.0f;
 	float roughnessFactor = 1.0f;
 	int32_t metallicRoughnessIndex = -1;
 	int32_t normalIndex = -1;
-	int32_t emissiveIndex = -1;
 	uint32_t _pad0;
+	uint32_t _pad1;
 };
 
 

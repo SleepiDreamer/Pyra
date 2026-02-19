@@ -2,7 +2,8 @@
 #include "ShaderCompiler.h"
 #include "Shader.h"
 #include "CommandQueue.h"
-#include "HelpersDX.h"
+#include "StructsDX.h"
+#include "CommonDX.h"
 
 #include <d3dx12.h>
 #include <iostream>
@@ -29,6 +30,11 @@ RTPipeline::~RTPipeline() = default;
 bool RTPipeline::IsLastCompileSuccesful() const
 {
 	return !m_shader->LastCompileFailed();
+}
+
+std::string RTPipeline::GetLastCompileError() const
+{
+	return m_shader->GetLastCompileError();
 }
 
 void RTPipeline::CreateLocalRootSignature(ID3D12Device10* device)
@@ -62,7 +68,7 @@ void RTPipeline::CreatePSO(ID3D12Device10* device)
 
     auto shaderConfig = psoDesc.CreateSubobject<CD3DX12_RAYTRACING_SHADER_CONFIG_SUBOBJECT>();
     shaderConfig->Config(
-        sizeof(float) * 3, // max payload size
+        sizeof(float) * 18, // max payload size
         sizeof(float) * 2  // max attribute size
     );
 

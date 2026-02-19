@@ -98,9 +98,14 @@
   <ItemGroup>
     <None Include="shaders\camera.slang" />
     <None Include="shaders\helpers.slang" />
+    <None Include="shaders\random.slang" />
+    <None Include="shaders\rng.slang" />
+    <None Include="shaders\random\xxhash32.slang" />
     <None Include="shaders\raytracing.slang">
       <FileType>Document</FileType>
     </None>
+    <None Include="shaders\random\sampling.slang" />
+    <None Include="shaders\settings.slang" />
     <None Include="shaders\structs.slang" />
   </ItemGroup>
   <ItemGroup>

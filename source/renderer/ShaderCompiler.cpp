@@ -18,11 +18,12 @@ ShaderCompiler::ShaderCompiler()
 
 ShaderCompiler::~ShaderCompiler() = default;
 
-static void diagnoseIfNeeded(slang::IBlob* diagnosticsBlob)
+void ShaderCompiler::diagnoseIfNeeded(slang::IBlob* diagnosticsBlob, CompilationResult& result)
 {
     if (diagnosticsBlob != nullptr)
     {
 	    std::cerr << static_cast<const char*>(diagnosticsBlob->getBufferPointer()) << "\n";
+		result.errorLog += static_cast<const char*>(diagnosticsBlob->getBufferPointer());
     }
 }
 
@@ -58,7 +59,7 @@ ShaderCompiler::CompilationResult ShaderCompiler::Compile(const std::string& fil
     Slang::ComPtr<slang::IBlob> diagnostics;
 
     slang::IModule* module = session->loadModule(filePath.c_str(), diagnostics.writeRef());
-    diagnoseIfNeeded(diagnostics.get());
+    diagnoseIfNeeded(diagnostics.get(), result);
     if (!module) { return result; }
 
     std::vector<slang::IComponentType*> components;
@@ -83,15 +84,15 @@ ShaderCompiler::CompilationResult ShaderCompiler::Compile(const std::string& fil
 	session->createCompositeComponentType(components.data(),
         static_cast<SlangInt>(components.size()),
         composed.writeRef(), diagnostics.writeRef());
-    diagnoseIfNeeded(diagnostics.get());
+    diagnoseIfNeeded(diagnostics.get(), result);
 
     Slang::ComPtr<slang::IComponentType> linked;
     composed->link(linked.writeRef(), diagnostics.writeRef());
-    diagnoseIfNeeded(diagnostics.get());
+    diagnoseIfNeeded(diagnostics.get(), result);
 
     Slang::ComPtr<slang::IBlob> code;
     linked->getTargetCode(0, code.writeRef(), diagnostics.writeRef());
-    diagnoseIfNeeded(diagnostics.get());
+    diagnoseIfNeeded(diagnostics.get(), result);
 
     if (!code) { result.errorLog = "Failed to generate code"; return result; }
 

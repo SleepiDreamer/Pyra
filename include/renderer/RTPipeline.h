@@ -4,6 +4,7 @@
 class ShaderCompiler;
 class Shader;
 class CommandQueue;
+struct HitGroupRecord;
 
 class RTPipeline
 {
@@ -18,6 +19,7 @@ public:
 	[[nodiscard]] D3D12_DISPATCH_RAYS_DESC GetDispatchRaysDesc() const;
     [[nodiscard]] ID3D12StateObject* GetPSO() const { return m_pso.Get(); }
     [[nodiscard]] bool IsLastCompileSuccesful() const;
+    [[nodiscard]] std::string GetLastCompileError() const;
 private:
     void CreateLocalRootSignature(ID3D12Device10* device);
     void CreatePSO(ID3D12Device10* device);

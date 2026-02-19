@@ -5,6 +5,7 @@
 #include "CommandQueue.h"
 #include "UploadContext.h"
 #include "GPUAllocator.h"
+#include "StructsDX.h"
 
 Scene::Scene(RenderContext& context)
 	: m_context(context)
@@ -64,11 +65,12 @@ void Scene::UploadMaterials()
 			materials.push_back({
 				texture.albedoFactor,
 				texture.albedoIndex,
+				texture.emissiveFactor,
+				texture.emissiveIndex,
 				texture.metallicFactor,
 				texture.roughnessFactor,
 				texture.metallicRoughnessIndex,
-				texture.normalIndex,
-				texture.emissiveIndex
+				texture.normalIndex
 			});
 		}
 	}

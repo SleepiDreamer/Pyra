@@ -1,6 +1,7 @@
 #pragma once
 #include <d3dx12.h>
-#include <glm/vec2.hpp>
+#include <glm/glm.hpp>
+#include <ImReflect.hpp>
 #include <iostream>
 #include <stdexcept>
 
@@ -57,20 +58,20 @@ inline void tag_invoke(ImReflect::ImInput_t, const char* label, BOOL& value, ImS
     ImReflect::Detail::check_input_states(bool_response);
 }
 
-inline void tag_invoke(ImReflect::ImInput_t, const char* label, glm::vec3& value, ImSettings& settings, ImResponse& response) {
-    auto& vec3_response = response.get<glm::vec3>();
-
-    bool changed = ImGui::InputFloat3(label, &value.x);
-    if (changed) vec3_response.changed();
-
-    ImReflect::Detail::check_input_states(vec3_response);
-}
-
 inline void tag_invoke(ImReflect::ImInput_t, const char* label, glm::vec2& value, ImSettings& settings, ImResponse& response) {
     auto& vec2_response = response.get<glm::vec2>();
 
-    bool changed = ImGui::InputFloat2(label, &value.x);
+	bool changed = ImGui::DragFloat2(label, &value.x, 0.02f);
     if (changed) vec2_response.changed();
 
     ImReflect::Detail::check_input_states(vec2_response);
+}
+
+inline void tag_invoke(ImReflect::ImInput_t, const char* label, glm::vec3& value, ImSettings& settings, ImResponse& response) {
+    auto& vec3_response = response.get<glm::vec3>();
+
+    bool changed = ImGui::DragFloat3(label, &value.x, 0.02f);
+    if (changed) vec3_response.changed();
+
+    ImReflect::Detail::check_input_states(vec3_response);
 }

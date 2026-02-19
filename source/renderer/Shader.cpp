@@ -37,6 +37,7 @@ bool Shader::Reload()
     {
         std::cerr << "Failed to compile shader: " << m_filePath << "\n" << result.errorLog << "\n";
         m_lastWriteTime = std::filesystem::last_write_time(m_filePath);
+		m_lastCompileError = result.errorLog;
 		m_lastCompileFailed = true;
         return false;
     }

@@ -1,4 +1,5 @@
 #pragma once
+#include <glfw3.h>
 #include <windows.h>
 #include <memory>
 
@@ -13,14 +14,12 @@ public:
 
 	[[nodiscard]] GLFWwindow* GetGLFWWindow() const { return m_window; }
 	[[nodiscard]] HWND GetHWND() const { return m_hwnd; }
-	[[nodiscard]] int GetWidth() const { return m_width; }
-	[[nodiscard]] int GetHeight() const { return m_height; }
+	[[nodiscard]] int GetWidth() const;
+	[[nodiscard]] int GetHeight() const;
 
 private:
 	HWND m_hwnd = nullptr;
 	GLFWwindow* m_window;
 	GLFWmonitor* m_monitor;
-	int m_width = -1;
-	int m_height = -1;
 };
 

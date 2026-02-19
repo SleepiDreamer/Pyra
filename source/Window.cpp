@@ -20,7 +20,18 @@ Window::Window(const int width, const int height, const char* title)
 	m_window = glfwCreateWindow(width, height, title, nullptr, nullptr);
 
 	m_hwnd = glfwGetWin32Window(m_window);
+}
 
-	m_width = width;
-	m_height = height;
+int Window::GetWidth() const
+{
+	int width;
+	glfwGetWindowSize(m_window, &width, nullptr);
+	return width;
+}
+
+int Window::GetHeight() const
+{
+	int height;
+	glfwGetWindowSize(m_window, nullptr, &height);
+	return height;
 }

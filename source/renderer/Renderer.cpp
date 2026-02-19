@@ -14,12 +14,21 @@
 #include "RTPipeline.h"
 #include "ImGuiWrapper.h"
 #include "Scene.h"
+#include "StructsDX.h"
 #include "CommonDX.h"
 
 #include <imgui.h>
 #include <iostream>
 
 using namespace Microsoft::WRL;
+
+// TODO
+// - normal mapping/Mikkt
+// - path tracing
+// - explicit lights
+// - HDRI
+// - tonemapping
+// - DLSS SR & RR
 
 Renderer::Renderer(Window& window, bool debug)
 	: m_window(window)
@@ -121,7 +130,6 @@ void Renderer::Render(const float deltaTime)
 	camData.up = m_camera->GetUp();
 	camData.position = m_camera->GetPosition();
 	camData.fov = m_camera->m_fov;
-	m_cameraCB->Update(backBufferIndex, camData);
 
 	// Begin frame
 	{
@@ -134,31 +142,36 @@ void Renderer::Render(const float deltaTime)
 	{
 		if (!m_rtPipeline->IsLastCompileSuccesful())
 		{
-			ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(1.0f, 0.0f, 0.0f, 0.5f));
+			ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(1.0f, 0.0f, 0.0f, 0.3f));
 			ImGui::Begin("Border", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize);
 			ImGui::SetWindowPos(ImVec2(0, 0));
 			ImGui::SetWindowSize(ImGui::GetIO().DisplaySize);
 			ImGui::End();
 			ImGui::PopStyleColor();
+
+			ImGui::SetNextWindowPos(ImVec2(m_window.GetWidth() / 2.0f - 400.0f, m_window.GetHeight() / 2.0f - 100.0f));
+			ImGui::Begin("Shader Compile Errors", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
+			ImGui::PushTextWrapPos(800.0f);
+			ImGui::TextWrapped("%s", m_rtPipeline->GetLastCompileError().c_str());
+			ImGui::PopTextWrapPos();
+			ImGui::End();
 		}
 
 		auto config = ImSettings();
-		config.push<float>()
-			.as_drag()
-			.min(0)
-			.max(10)
-			.speed(0.02f)
-			.pop();
+		config.push<float>().as_drag().min(0).max(10).speed(0.02f).pop();
 
+		ImGui::SetNextWindowPos(ImVec2(0, 0));
 		ImGui::Begin("Debug");
 		ImGui::Text("FPS: %.1f", ImGui::GetIO().Framerate);
 		ImGui::Text("Frame: %d", m_renderSettings.frame);
 		ImReflect::Input("Render Settings", m_renderSettings, config);
+		ImReflect::Input("Camera", camData, config);
 		ImGui::End();
 	}
 
 	m_renderSettings.frame++;
 	m_renderSettingsCB->Update(backBufferIndex, m_renderSettings);
+	m_cameraCB->Update(backBufferIndex, camData);
 
 	// Record commands
 	{

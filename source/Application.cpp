@@ -15,7 +15,7 @@ Application::Application(const bool debugLayer)
 	m_camera->SetDirection(glm::vec3(0.0f, 0.0f, -1.0f));
 	m_camera->m_fov = 60.0f;
 	m_renderer->SetCamera(m_camera);
-	m_renderer->LoadModel("assets/models/LL94Small.glb");
+	m_renderer->LoadModel("assets/models/Sponza/Sponza.gltf");
 
 	auto glfwWindow = m_window->GetGLFWWindow();
 
@@ -49,7 +49,7 @@ Application::~Application()
 
 void Application::Update(const float deltaTime)
 {
-	float cameraSpeed = 1.0f;
+	float cameraSpeed = 3.0f;
 	if (glfwGetKey(m_window->GetGLFWWindow(), GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
 	{
 		cameraSpeed *= 4.0f;
@@ -91,7 +91,7 @@ void Application::Update(const float deltaTime)
 	if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS || m_mouseCaptured)
 	{
 
-		const float sensitivity = static_cast<float>(5.0 / m_window->GetWidth());
+		const float sensitivity = static_cast<float>(4.0 / m_window->GetWidth());
 		m_camera->Rotate(sensitivity * glm::vec2(static_cast<float>(m_mouseXPrev - x), static_cast<float>(m_mouseYPrev - y)));
 	}
 

@@ -28,13 +28,13 @@ RTPipeline::~RTPipeline() = default;
 
 void RTPipeline::CreateLocalRootSignature(ID3D12Device10* device)
 {
-    CD3DX12_ROOT_PARAMETER1 params[2] = {};
+    CD3DX12_ROOT_PARAMETER1 params[3] = {};
     params[0].InitAsShaderResourceView(0, 1); // t0:1 vertices
     params[1].InitAsShaderResourceView(1, 1); // t1:1 indices
-	//params[2].InitAsConstants(0, 1);          // b0:1 material index
+	params[2].InitAsConstants(2, 0, 1);       // b0:1 material index
 
     CD3DX12_VERSIONED_ROOT_SIGNATURE_DESC desc;
-    desc.Init_1_1(2, params, 0, nullptr, D3D12_ROOT_SIGNATURE_FLAG_LOCAL_ROOT_SIGNATURE);
+    desc.Init_1_1(3, params, 0, nullptr, D3D12_ROOT_SIGNATURE_FLAG_LOCAL_ROOT_SIGNATURE);
 
     ComPtr<ID3DBlob> sigBlob, errorBlob;
     ThrowIfFailed(D3DX12SerializeVersionedRootSignature(&desc, D3D_ROOT_SIGNATURE_VERSION_1_1, &sigBlob, &errorBlob));

@@ -89,15 +89,20 @@ D3D12_GPU_VIRTUAL_ADDRESS Scene::GetTLASAddress() const
 std::vector<HitGroupRecord> Scene::GetHitGroupRecords() const
 {
 	std::vector<HitGroupRecord> records;
+	uint32_t materialOffset = 0;
 	for (const auto& model : m_models)
 	{
 		for (const auto& mesh : model.GetMeshes())
 		{
-			records.push_back({
-				mesh.GetVertexBuffer()->GetGPUVirtualAddress(),
-				mesh.GetIndexBuffer()->GetGPUVirtualAddress()
-				});
+			HitGroupRecord rec{};
+			rec.vertexBuffer = mesh.GetVertexBuffer()->GetGPUVirtualAddress();
+			rec.indexBuffer = mesh.GetIndexBuffer()->GetGPUVirtualAddress();
+			rec.materialIndex = mesh.m_materialIndex >= 0
+				? materialOffset + static_cast<uint32_t>(mesh.m_materialIndex)
+				: 0;
+			records.push_back(rec);
 		}
+		materialOffset += static_cast<uint32_t>(model.GetMaterials().size());
 	}
 	return records;
 }

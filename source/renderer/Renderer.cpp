@@ -70,7 +70,12 @@ void Renderer::ToggleFullscreen() const
 
 void Renderer::LoadModel(const std::string& path)
 {
+	std::cout << "Loading model: " << path;
+	std::chrono::steady_clock::time_point startTime = std::chrono::steady_clock::now();
 	m_scene->LoadModel(path);
+	auto time = std::chrono::steady_clock::now() - startTime;
+	std::cout << "\r";
+	std::cout << "Loaded model: " << path << ". Took " << std::chrono::duration_cast<std::chrono::milliseconds>(time).count() / 1000.0 << " s.\n";
 
 	m_rtPipeline->RebuildShaderTables(m_device->GetDevice(), m_scene->GetHitGroupRecords());
 }
@@ -82,6 +87,7 @@ void Renderer::Resize(const int width, const int height)
 		return;
 	}
 
+	std::cout << "Window resized: " << width << "x" << height << "\n";
 	m_commandQueue->Flush();
 	m_swapChain->Resize(width, height, m_device->GetDevice());
 	m_rtOutputTexture->Resize(m_device->GetDevice(), width, height);

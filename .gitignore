@@ -367,3 +367,4 @@ FodyWeavers.xsd
 concatenated.txt
 !external\
 /imgui.ini
+/assets/models/Bistro.glb

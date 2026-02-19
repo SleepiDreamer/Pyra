@@ -19,7 +19,7 @@ Model::~Model() = default;
 
 void Model::LoadGLTF(const std::filesystem::path& path)
 {
-    fastgltf::Parser parser;
+    fastgltf::Parser parser(fastgltf::Extensions::KHR_lights_punctual);
 
     auto data = fastgltf::GltfDataBuffer::FromPath(path);
     if (data.error() != fastgltf::Error::None)

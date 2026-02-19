@@ -9,6 +9,10 @@ uniform Camera camera : register(b0, space0);
 
 StructuredBuffer<Vertex> vertices : register(t0, space1);
 StructuredBuffer<uint> indices : register(t1, space1);
+cbuffer HitGroupConstants : register(b0, space1)
+{
+    uint materialIndex;
+};
 
 float3 PinholeCamera(float2 uv, Camera camera)
 {
@@ -59,9 +63,9 @@ void ClosestHit(inout Payload payload, in BuiltInTriangleIntersectionAttributes 
               + vertices[i1].uv * attr.barycentrics.x
               + vertices[i2].uv * attr.barycentrics.y;
 
-    Material mat = materials[InstanceID()];
+    Material material = materials[materialIndex];
 
-    DescriptorHandle<Texture2D> albedoHandle = DescriptorHandle<Texture2D>(uint2(mat.albedoIndex, 0));
+    DescriptorHandle<Texture2D> albedoHandle = DescriptorHandle<Texture2D>(uint2(material.albedoIndex, 0));
     Texture2D albedoTex = albedoHandle;
     float3 albedo = albedoTex.SampleLevel(linearSampler, uv, 0).rgb;
 

@@ -39,6 +39,7 @@ public:
 private:
 	Window& m_window;
 	std::shared_ptr<Camera> m_camera = nullptr;
+	CameraData m_prevCamData;
 	std::unique_ptr<Device> m_device = nullptr;
 
 	RenderContext m_context;

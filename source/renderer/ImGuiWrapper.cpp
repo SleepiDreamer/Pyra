@@ -19,6 +19,7 @@ ImGuiWrapper::ImGuiWrapper(const Window& window, RenderContext& context, const D
     glfwGetWindowContentScale(window.GetGLFWWindow(), &xScale, &yScale);
     ImGuiIO& io = ImGui::GetIO();
     io.FontGlobalScale = xScale;
+    io.ConfigFlags &= ~ImGuiConfigFlags_NavEnableKeyboard;
     ImGui::GetStyle().ScaleAllSizes(xScale);
 
     ImGui_ImplGlfw_InitForOther(window.GetGLFWWindow(), true);

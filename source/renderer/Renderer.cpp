@@ -52,7 +52,7 @@ Renderer::Renderer(Window& window, bool debug)
 	const int width = window.GetWidth();
 	const int height = window.GetHeight();
 	m_rtOutputBuffer = std::make_unique<OutputBuffer>(m_context, DXGI_FORMAT_R10G10B10A2_UNORM, width, height, L"RT Output Buffer");
-	m_accumulationBuffer = std::make_unique<OutputBuffer>(m_context, DXGI_FORMAT_R10G10B10A2_UNORM, width, height, L"Accumulation Buffer");
+	m_accumulationBuffer = std::make_unique<OutputBuffer>(m_context, DXGI_FORMAT_R32G32B32A32_FLOAT, width, height, L"Accumulation Buffer");
 
 	m_rootSignature = std::make_unique<RootSignature>();
 	m_rootSignature->AddDescriptorTable(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 1, 0, 0, "outputBuffer");			// u0:0 RT output
@@ -106,6 +106,7 @@ void Renderer::Resize(const int width, const int height)
 	m_commandQueue->Flush();
 	m_swapChain->Resize(width, height, m_device->GetDevice());
 	m_rtOutputBuffer->Resize(m_device->GetDevice(), width, height);
+	m_accumulationBuffer->Resize(m_device->GetDevice(), width, height);
 }
 
 void Renderer::Render(const float deltaTime)
@@ -164,13 +165,17 @@ void Renderer::Render(const float deltaTime)
 		ImGui::SetNextWindowPos(ImVec2(0, 0));
 		ImGui::Begin("Debug");
 		ImGui::Text("FPS: %.1f", ImGui::GetIO().Framerate);
-		ImGui::Text("Frame: %d", m_renderSettings.frame);
-		ImReflect::Input("Render Settings", m_renderSettings, config);
-		ImReflect::Input("Camera", camData, config);
+		ImGui::Text("Frame: %u", m_renderSettings.frame);
+		auto responseRender = ImReflect::Input("Render Settings", m_renderSettings, config);
+		auto responseCamera = ImReflect::Input("Camera", camData, config);
+		if (responseRender.get<RenderSettings>().is_changed() || responseCamera.get<CameraData>().is_changed())
+		{
+			m_renderSettings.frame = 0; // Reset accumulation on settings change
+		}
+		
 		ImGui::End();
 	}
 
-	m_renderSettings.frame++;
 	m_renderSettingsCB->Update(backBufferIndex, m_renderSettings);
 	m_cameraCB->Update(backBufferIndex, camData);
 
@@ -223,5 +228,12 @@ void Renderer::Render(const float deltaTime)
 		m_fenceValues[backBufferIndex] = m_commandQueue->ExecuteCommandList(commandList);
 		m_swapChain->Present();
 		m_commandQueue->WaitForFenceValue(m_fenceValues[m_swapChain->GetCurrentBackBufferIndex()]);
+		
+		m_renderSettings.frame++;
+		if (camData.position != m_prevCamData.position || camData.forward != m_prevCamData.forward)
+		{
+			m_renderSettings.frame = 0;
+		}
+		m_prevCamData = camData;
 	}
 }

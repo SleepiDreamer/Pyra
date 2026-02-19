@@ -95,7 +95,11 @@ void Application::Update(const float deltaTime)
 	{
 
 		const float sensitivity = static_cast<float>(4.0 / m_window->GetWidth());
-		m_camera->Rotate(sensitivity * glm::vec2(static_cast<float>(m_mouseXPrev - x), static_cast<float>(m_mouseYPrev - y)));
+		glm::vec2 delta = sensitivity * glm::vec2(static_cast<float>(m_mouseXPrev - x), static_cast<float>(m_mouseYPrev - y));
+		if (abs(delta.x) > 0.0f || abs(delta.y) > 0.0f)
+		{
+			m_camera->Rotate(delta);
+		}
 	}
 
 	m_mouseXPrev = x;
@@ -104,10 +108,15 @@ void Application::Update(const float deltaTime)
 
 void Application::KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
-	ImGui_ImplGlfw_KeyCallback(window, key, scancode, action, mods);
+	if (key != GLFW_KEY_TAB)
+	{
+		ImGui_ImplGlfw_KeyCallback(window, key, scancode, action, mods);
+	}
 
 	if (ImGui::GetIO().WantCaptureKeyboard)
+	{
 		return;
+	}
 
 	auto* app = static_cast<Application*>(glfwGetWindowUserPointer(window));
 	if ((key == GLFW_KEY_ENTER && action == GLFW_PRESS) && (mods & GLFW_MOD_ALT))

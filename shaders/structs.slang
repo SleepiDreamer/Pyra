@@ -56,10 +56,10 @@ public struct RenderSettings
     public float exposure;
     public float skyExposure;
     public float lightExposure;
-    public bool whiteFurnace;
-    public bool upscaling;
     public uint frame;
     public TonemapOperator tonemapper;
+    public bool whiteFurnace;
+    public bool upscaling;
     uint _pad0;
 };
 

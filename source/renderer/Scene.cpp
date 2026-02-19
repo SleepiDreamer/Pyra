@@ -14,7 +14,13 @@ Scene::Scene(RenderContext& context)
 void Scene::LoadModel(const std::string& path)
 {
 	auto commandList = m_context.commandQueue->GetCommandList();
-	m_models.emplace_back(m_context, path);
+	m_models.emplace_back(m_context, commandList.Get(), path);
+
+	m_context.uploadContext->Flush();
+
+	m_context.commandQueue->ExecuteCommandList(commandList);
+	m_context.commandQueue->Flush();
+
 	std::vector<D3D12_RAYTRACING_INSTANCE_DESC> instances = {};
 	int instanceId = 0;
 	for (const auto& model : m_models)
@@ -30,6 +36,8 @@ void Scene::LoadModel(const std::string& path)
 	UploadMaterials();
 
 	m_context.uploadContext->Flush();
+
+	commandList = m_context.commandQueue->GetCommandList();
 
 	for (auto& model : m_models)
 	{

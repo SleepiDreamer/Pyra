@@ -12,7 +12,7 @@ class GPUAllocator;
 class Model
 {
 public:
-    Model(RenderContext& context, const std::filesystem::path& path);
+    Model(RenderContext& context, ID3D12GraphicsCommandList4* commandList, const std::filesystem::path& path);
     ~Model();
 
     Model(const Model&) = delete;
@@ -26,15 +26,15 @@ public:
     [[nodiscard]] const std::string& GetName() const { return m_name; }
 
 private:
-    void LoadGLTF(const std::filesystem::path& path);
+    void LoadGLTF(ID3D12GraphicsCommandList4* commandList, const std::filesystem::path& path);
 
-    void TraverseNode(const fastgltf::Asset& asset,
-                      size_t nodeIndex, const DirectX::XMMATRIX& parentTransform);
+    void TraverseNode(ID3D12GraphicsCommandList4* commandList,
+                      const fastgltf::Asset& asset, size_t nodeIndex, const DirectX::XMMATRIX& parentTransform);
 
     static DirectX::XMMATRIX GetNodeTransform(const fastgltf::Node& node);
 
-    void LoadMesh(const fastgltf::Asset& asset,
-                  const fastgltf::Mesh& gltfMesh, const DirectX::XMMATRIX& transform);
+    void LoadMesh(ID3D12GraphicsCommandList4* commandList,
+                  const fastgltf::Asset& asset, const fastgltf::Mesh& gltfMesh, const DirectX::XMMATRIX& transform);
     void LoadMaterials(const fastgltf::Asset& asset);
 
     RenderContext& m_context;

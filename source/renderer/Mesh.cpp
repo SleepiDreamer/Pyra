@@ -85,11 +85,11 @@ D3D12_RAYTRACING_GEOMETRY_DESC Mesh::GetGeometryDesc() const
     return desc;
 }
 
-void Mesh::BuildBLAS(RenderContext& context)
+void Mesh::BuildBLAS(RenderContext& context, ID3D12GraphicsCommandList4* commandList)
 {
     m_blas = std::make_unique<BLAS>(context);
     std::vector<D3D12_RAYTRACING_GEOMETRY_DESC> geometries = { GetGeometryDesc() };
-    m_blas->Build(context.device, geometries);
+    m_blas->Build(context.device, commandList, geometries);
 }
 
 D3D12_VERTEX_BUFFER_VIEW Mesh::GetVertexBufferView() const

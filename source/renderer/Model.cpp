@@ -1,5 +1,6 @@
 #include "Model.h"
 #include "GPUAllocator.h"
+#include "CommandQueue.h"
 
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
@@ -9,15 +10,15 @@
 
 using namespace DirectX;
 
-Model::Model(RenderContext& context, const std::filesystem::path& path)
+Model::Model(RenderContext& context, ID3D12GraphicsCommandList4* commandList, const std::filesystem::path& path)
     : m_context(context), m_name(path.stem().string())
 {
-    LoadGLTF(path);
+    LoadGLTF(commandList, path);
 }
 
 Model::~Model() = default;
 
-void Model::LoadGLTF(const std::filesystem::path& path)
+void Model::LoadGLTF(ID3D12GraphicsCommandList4* commandList, const std::filesystem::path& path)
 {
     fastgltf::Parser parser(fastgltf::Extensions::KHR_lights_punctual);
 
@@ -42,13 +43,13 @@ void Model::LoadGLTF(const std::filesystem::path& path)
 
     for (size_t nodeIndex : scene.nodeIndices)
     {
-        TraverseNode(asset.get(), nodeIndex, XMMatrixIdentity());
+        TraverseNode(commandList, asset.get(), nodeIndex, XMMatrixIdentity());
     }
 
     LoadMaterials(asset.get());
 }
 
-void Model::TraverseNode(const fastgltf::Asset& asset, const size_t nodeIndex, const XMMATRIX& parentTransform)
+void Model::TraverseNode(ID3D12GraphicsCommandList4* commandList, const fastgltf::Asset& asset, const size_t nodeIndex, const XMMATRIX& parentTransform)
 {
     const auto& node = asset.nodes[nodeIndex];
 
@@ -59,14 +60,14 @@ void Model::TraverseNode(const fastgltf::Asset& asset, const size_t nodeIndex, c
     if (node.meshIndex.has_value())
     {
         const auto& mesh = asset.meshes[node.meshIndex.value()];
-        LoadMesh(asset, mesh, worldTransform);
+        LoadMesh(commandList, asset, mesh, worldTransform);
     }
 
     // TODO: Handle lights when node.lightIndex.has_value()
 
     for (size_t childIndex : node.children)
     {
-        TraverseNode(asset, childIndex, worldTransform);
+        TraverseNode(commandList, asset, childIndex, worldTransform);
     }
 }
 
@@ -96,7 +97,7 @@ XMMATRIX Model::GetNodeTransform(const fastgltf::Node& node)
         }, node.transform);
 }
 
-void Model::LoadMesh(const fastgltf::Asset& asset, const fastgltf::Mesh& gltfMesh, const XMMATRIX& transform)
+void Model::LoadMesh(ID3D12GraphicsCommandList4* commandList, const fastgltf::Asset& asset, const fastgltf::Mesh& gltfMesh, const XMMATRIX& transform)
 {
     for (const auto& primitive : gltfMesh.primitives)
     {
@@ -180,7 +181,7 @@ void Model::LoadMesh(const fastgltf::Asset& asset, const fastgltf::Mesh& gltfMes
             "_prim" + std::to_string(m_meshes.size());
 
         mesh.Upload(m_context, vertices, indices, meshName);
-        mesh.BuildBLAS(m_context);
+        mesh.BuildBLAS(m_context, commandList);
         m_meshes.push_back(std::move(mesh));
     }
 }

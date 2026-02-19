@@ -31,7 +31,7 @@ public:
     void Upload(const RenderContext& context, const std::vector<Vertex>& vertices,
                 const std::vector<uint32_t>& indices, const std::string& name);
 
-    void BuildBLAS(RenderContext& context);
+    void BuildBLAS(RenderContext& context, ID3D12GraphicsCommandList4* commandList);
 
     [[nodiscard]] D3D12_RAYTRACING_GEOMETRY_DESC GetGeometryDesc() const;
     [[nodiscard]] ID3D12Resource* GetVertexBuffer() const { return m_vertexBuffer.resource; }

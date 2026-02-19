@@ -87,9 +87,11 @@
     <ClCompile Include="source\renderer\Texture.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="shaders\helpers.slang" />
     <None Include="shaders\raytracing.slang">
       <FileType>Document</FileType>
     </None>
+    <None Include="shaders\structs.slang" />
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="external\glm\glm.natvis" />

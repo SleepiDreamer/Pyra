@@ -1,3 +1,6 @@
+#include "structs.slang"
+#include "helpers.slang"
+
 uniform RWTexture2D outputTexture : register(u0, space0);
 uniform RaytracingAccelerationStructure sceneBVH : register(t0, space0);
 StructuredBuffer<Material> materials : register(t1, space0);
@@ -6,68 +9,6 @@ uniform Camera camera : register(b0, space0);
 
 StructuredBuffer<Vertex> vertices : register(t0, space1);
 StructuredBuffer<uint> indices : register(t1, space1);
-
-struct Vertex
-{
-    float3 position;
-    float3 normal;
-    float2 uv;
-}
-
-struct Camera
-{
-    float3 position;
-    float fov;
-    float3 forward;
-    uint _pad0;
-    float3 right;
-    uint _pad1;
-    float3 up;
-    uint _pad2;
-}
-
-struct Material
-{
-    float3 albedoFactor;
-    int albedoIndex;
-    float metallicFactor;
-    float roughnessFactor;
-    int metallicRoughnessIndex;
-    int normalIndex;
-    int emissiveIndex;
-    int _pad0;
-};
-
-struct [raypayload] Payload
-{
-    float3 color : read(caller) : write(caller, closesthit, miss);
-};
-
-float LinearToSrgb(float linear)
-{
-    if (linear <= 0.0031308)
-        return linear * 12.92;
-    else
-        return 1.055 * pow(linear, 1.0 / 2.4) - 0.055;
-}
-
-float3 LinearToSrgb(float3 linear)
-{
-    return float3(LinearToSrgb(linear.r), LinearToSrgb(linear.g), LinearToSrgb(linear.b));
-}
-
-float SrgbToLinear(float srgb)
-{
-    if (srgb <= 0.04045)
-        return srgb / 12.92;
-    else
-        return pow((srgb + 0.055) / 1.055, 2.4);
-}
-
-float3 SrgbToLinear(float3 srgb)
-{
-    return float3(SrgbToLinear(srgb.r), SrgbToLinear(srgb.g), SrgbToLinear(srgb.b));
-}
 
 float3 PinholeCamera(float2 uv, Camera camera)
 {

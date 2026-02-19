@@ -212,6 +212,8 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\raytracing.slang" />
+    <None Include="shaders\structs.slang" />
+    <None Include="shaders\helpers.slang" />
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="external\glm\glm.natvis" />

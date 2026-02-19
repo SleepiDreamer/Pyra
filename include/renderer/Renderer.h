@@ -34,6 +34,8 @@ public:
 	void ToggleFullscreen() const;
 	void SetCamera(std::shared_ptr<Camera> camera) { m_camera = std::move(camera); }
 	void LoadModel(const std::string& path);
+	void Resize(int width, int height);
+
 private:
 	Window& m_window;
 	std::shared_ptr<Camera> m_camera = nullptr;

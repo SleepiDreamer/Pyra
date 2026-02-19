@@ -75,6 +75,18 @@ void Renderer::LoadModel(const std::string& path)
 	m_rtPipeline->RebuildShaderTables(m_device->GetDevice(), m_scene->GetHitGroupRecords());
 }
 
+void Renderer::Resize(const int width, const int height)
+{
+	if (width == 0 || height == 0)
+	{
+		return;
+	}
+
+	m_commandQueue->Flush();
+	m_swapChain->Resize(width, height, m_device->GetDevice());
+	m_rtOutputTexture->Resize(m_device->GetDevice(), width, height);
+}
+
 void Renderer::Render(const float deltaTime)
 {
 	auto backBufferIndex = m_swapChain->GetCurrentBackBufferIndex();

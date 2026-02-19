@@ -25,6 +25,7 @@ void OutputTexture::Create(ID3D12Device* device, const uint32_t width, const uin
     }
 
 	m_resource = m_context.allocator->CreateTexture(width, height, m_format, D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS, m_name.c_str());
+    m_currentState = D3D12_RESOURCE_STATE_UNORDERED_ACCESS;
 
     m_uav = m_context.descriptorHeap->Allocate();
     m_srv = m_context.descriptorHeap->Allocate();

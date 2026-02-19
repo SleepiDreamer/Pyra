@@ -37,7 +37,7 @@ void Scene::LoadModel(const std::string& path)
 		{
 			if (tex.GetResource())
 			{
-				TransitionResource(commandList.Get(), tex.GetResource(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+				TransitionResource(commandList.Get(), tex.GetResource(), D3D12_RESOURCE_STATE_COMMON, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
 			}
 		}
 	}

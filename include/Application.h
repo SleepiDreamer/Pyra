@@ -16,6 +16,8 @@ public:
 	void Update(float deltaTime);
 
 	static void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
+	static void WindowSizeCallback(GLFWwindow* window, int width, int height);
+
 private:
 	std::unique_ptr<Window> m_window = nullptr;
 	std::shared_ptr<Camera> m_camera = nullptr;

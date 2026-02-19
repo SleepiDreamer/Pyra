@@ -206,7 +206,7 @@ xcopy /D /Y "$(SolutionDir)external\dxc\bin\*.dll" "$(OutDir)"</Command>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>$(ProjectDir)external;$(ProjectDir)external\GLFW;$(ProjectDir)external\D3D12;$(ProjectDir)external\D3D12MA;$(ProjectDir)external\slang;$(ProjectDir)external\simdjson;$(ProjectDir)external\stb;$(ProjectDir)include;$(ProjectDir)include\renderer;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)external;$(ProjectDir)external\GLFW;$(ProjectDir)external\D3D12;$(ProjectDir)external\D3D12MA;$(ProjectDir)external\slang;$(ProjectDir)external\simdjson;$(ProjectDir)external\stb;$(ProjectDir)external\imgui;$(ProjectDir)include;$(ProjectDir)include\renderer;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions>/DNOMINMAX %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>

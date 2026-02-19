@@ -19,8 +19,9 @@ Application::Application(const bool debugLayer)
 
 	auto glfwWindow = m_window->GetGLFWWindow();
 
-	glfwSetKeyCallback(glfwWindow, KeyCallback);
 	glfwSetWindowUserPointer(glfwWindow, this);
+	glfwSetKeyCallback(glfwWindow, KeyCallback);
+	glfwSetWindowSizeCallback(glfwWindow, WindowSizeCallback);
 
 	glfwGetCursorPos(glfwWindow, &m_mouseXPrev, &m_mouseYPrev);
 
@@ -122,5 +123,14 @@ void Application::KeyCallback(GLFWwindow* window, int key, int scancode, int act
 		}
 
 		glfwGetCursorPos(window, &app->m_mouseXPrev, &app->m_mouseYPrev);
+	}
+}
+
+void Application::WindowSizeCallback(GLFWwindow* window, const int width, const int height)
+{
+	auto* app = static_cast<Application*>(glfwGetWindowUserPointer(window));
+	if (app && app->m_renderer)
+	{
+		app->m_renderer->Resize(width, height);
 	}
 }

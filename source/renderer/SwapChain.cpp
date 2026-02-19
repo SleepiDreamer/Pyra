@@ -186,7 +186,12 @@ void SwapChain::Resize(const uint32_t width, const uint32_t height, ID3D12Device
 
 	UINT swapChainFlags = m_useAdaptiveSync ? DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING : 0;
 	m_swapChain->ResizeBuffers(NUM_FRAMES_IN_FLIGHT, width, height, m_format, swapChainFlags);
+	m_currentBackBufferIndex = m_swapChain->GetCurrentBackBufferIndex();
+	m_currentState = D3D12_RESOURCE_STATE_COMMON;
 	CreateBackBuffers(device);
+
+	m_viewport = CD3DX12_VIEWPORT(0.0f, 0.0f, static_cast<float>(width), static_cast<float>(height));
+	m_scissorRect = CD3DX12_RECT(0, 0, width, height);
 }
 
 void SwapChain::Present()

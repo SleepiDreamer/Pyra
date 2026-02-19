@@ -6,7 +6,7 @@ void Texture::Create(const RenderContext& context, const void* data, const uint3
 {
 	m_resource = context.allocator->CreateTexture(
 		width, height, format,
-		D3D12_RESOURCE_STATE_COPY_DEST,
+		D3D12_RESOURCE_STATE_COMMON,
 		D3D12_RESOURCE_FLAG_NONE,
 		ToWideString(name.c_str()).c_str());
 

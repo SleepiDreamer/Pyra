@@ -21,3 +21,12 @@ void Texture::Create(const RenderContext& context, const void* data, const uint3
 	 srvDesc.Texture2D.MipLevels = 1;
 	 context.device->CreateShaderResourceView(m_resource.resource, &srvDesc, m_srv.cpuHandle);
 }
+
+int32_t Texture::GetDescriptorIndex() const
+{
+	if (m_resource)
+	{
+		return static_cast<int32_t>(m_srv.index);
+	}
+	return -1;
+}

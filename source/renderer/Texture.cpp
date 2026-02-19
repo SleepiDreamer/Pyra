@@ -4,6 +4,12 @@
 
 void Texture::Create(const RenderContext& context, const void* data, const uint32_t width, const uint32_t height, const DXGI_FORMAT format, const std::string& name)
 {
+	m_resource = context.allocator->CreateTexture(
+		width, height, format,
+		D3D12_RESOURCE_STATE_COPY_DEST,
+		D3D12_RESOURCE_FLAG_NONE,
+		ToWideString(name.c_str()).c_str());
+
 	context.uploadContext->UploadTexture(m_resource, data, width, height, format);
 
 	 m_srv = context.descriptorHeap->Allocate();

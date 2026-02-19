@@ -194,41 +194,64 @@ void Model::LoadMaterials(const fastgltf::Asset& asset)
         int width, height, nrChannels;
         unsigned char* data = nullptr;
 
-        // From fastgltf examples
         std::visit(fastgltf::visitor{
-             [](auto& arg) {},
-             [&](const fastgltf::sources::URI& filePath) {
-                 assert(filePath.fileByteOffset == 0);
-                 assert(filePath.uri.isLocalPath());
-
-                 const std::string path(filePath.uri.path().begin(), filePath.uri.path().end());
-                 data = stbi_load(path.c_str(), &width, &height, &nrChannels, 4);
-             },
-             [&](fastgltf::sources::Array& vector) {
-                 data = stbi_load_from_memory(reinterpret_cast<const stbi_uc*>(vector.bytes.data()),
-                                              static_cast<int>(vector.bytes.size()), &width, &height, &nrChannels, 4);
-             },
-             [&](const fastgltf::sources::BufferView& view) {
-                 auto& bufferView = asset.bufferViews[view.bufferViewIndex];
-                 auto& buffer = asset.buffers[bufferView.bufferIndex];
-                 std::visit(fastgltf::visitor {
-                     [](auto& arg) {},
-                     [&](fastgltf::sources::Array& vector) {
-                         data = stbi_load_from_memory(reinterpret_cast<const stbi_uc*>(vector.bytes.data() + bufferView.byteOffset),
-                                                      static_cast<int>(bufferView.byteLength), &width, &height, &nrChannels, 4);
-                     },
-                     [&](fastgltf::sources::ByteView& bv) {
-                         data = stbi_load_from_memory(reinterpret_cast<const stbi_uc*>(bv.bytes.data() + bufferView.byteOffset),
-                                                      static_cast<int>(bufferView.byteLength), &width, &height, &nrChannels, 4);
-                     }
-                 }, buffer.data);
-             },
+            [&](const fastgltf::sources::URI& filePath) {
+                assert(filePath.fileByteOffset == 0);
+                assert(filePath.uri.isLocalPath());
+                const std::string path(filePath.uri.path().begin(), filePath.uri.path().end());
+                data = stbi_load(path.c_str(), &width, &height, &nrChannels, 4);
+            },
+            [&](const fastgltf::sources::Array& vector) {
+                data = stbi_load_from_memory(
+                    reinterpret_cast<const stbi_uc*>(vector.bytes.data()),
+                    static_cast<int>(vector.bytes.size()),
+                    &width, &height, &nrChannels, 4);
+            },
+            [&](const fastgltf::sources::BufferView& view) {
+                auto& bufferView = asset.bufferViews[view.bufferViewIndex];
+                auto& buffer = asset.buffers[bufferView.bufferIndex];
+                std::visit(fastgltf::visitor{
+                    [&](const fastgltf::sources::Array& vector) {
+                        data = stbi_load_from_memory(
+                            reinterpret_cast<const stbi_uc*>(vector.bytes.data() + bufferView.byteOffset),
+                            static_cast<int>(bufferView.byteLength),
+                            &width, &height, &nrChannels, 4);
+                    },
+                    [&](const fastgltf::sources::ByteView& bv) {
+                        data = stbi_load_from_memory(
+                            reinterpret_cast<const stbi_uc*>(bv.bytes.data() + bufferView.byteOffset),
+                            static_cast<int>(bufferView.byteLength),
+                            &width, &height, &nrChannels, 4);
+                    },
+                    [&](const fastgltf::sources::Vector& vec) {
+                        data = stbi_load_from_memory(
+                            reinterpret_cast<const stbi_uc*>(vec.bytes.data() + bufferView.byteOffset),
+                            static_cast<int>(bufferView.byteLength),
+                            &width, &height, &nrChannels, 4);
+                    },
+                    [&](const fastgltf::sources::CustomBuffer& cb) {
+                        std::cerr << "[Model] Unhandled buffer source: CustomBuffer for image: " << image.name << "\n";
+                    },
+                    [&](auto& arg) {
+                        std::cerr << "[Model] Unhandled buffer source type: " << typeid(arg).name()
+                                  << " for image: " << image.name << "\n";
+                    }
+                }, buffer.data);
+            },
+            [&](auto& arg) {
+                std::cerr << "[Model] Unhandled image source type: " << typeid(arg).name()
+                          << " for image: " << image.name << "\n";
+            }
             }, image.data);
 
         if (data)
         {
             tex.Create(m_context, data, width, height, DXGI_FORMAT_R8G8B8A8_UNORM_SRGB, image.name.c_str());
             stbi_image_free(data);
+        }
+        else
+        {
+            std::cerr << "[Model] Failed to load image: " << image.name << "\n";
         }
 
         m_textures.push_back(std::move(tex));

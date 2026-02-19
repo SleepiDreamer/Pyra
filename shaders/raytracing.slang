@@ -43,6 +43,32 @@ struct [raypayload] Payload
     float3 color : read(caller) : write(caller, closesthit, miss);
 };
 
+float LinearToSrgb(float linear)
+{
+    if (linear <= 0.0031308)
+        return linear * 12.92;
+    else
+        return 1.055 * pow(linear, 1.0 / 2.4) - 0.055;
+}
+
+float3 LinearToSrgb(float3 linear)
+{
+    return float3(LinearToSrgb(linear.r), LinearToSrgb(linear.g), LinearToSrgb(linear.b));
+}
+
+float SrgbToLinear(float srgb)
+{
+    if (srgb <= 0.04045)
+        return srgb / 12.92;
+    else
+        return pow((srgb + 0.055) / 1.055, 2.4);
+}
+
+float3 SrgbToLinear(float3 srgb)
+{
+    return float3(SrgbToLinear(srgb.r), SrgbToLinear(srgb.g), SrgbToLinear(srgb.b));
+}
+
 float3 PinholeCamera(float2 uv, Camera camera)
 {
     float2 ndc = (uv * 2.0f) - 1.0f;
@@ -76,7 +102,7 @@ void RayGen()
 
     TraceRay(sceneBVH, RAY_FLAG_NONE, 0xFF, 0, 0, 0, ray, payload);
 
-    outputTexture[idx] = float4(payload.color, 1.0);
+    outputTexture[idx] = float4(LinearToSrgb(payload.color), 1.0);
 }
 
 [shader("closesthit")]

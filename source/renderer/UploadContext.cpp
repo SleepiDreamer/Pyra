@@ -6,7 +6,7 @@
 UploadContext::UploadContext(GPUAllocator& allocator, ID3D12Device10* device)
     : m_allocator(allocator)
 {
-    m_queue = std::make_unique<CommandQueue>(device, D3D12_COMMAND_LIST_TYPE_COPY);
+    m_queue = std::make_unique<CommandQueue>(device, "UploadContext", D3D12_COMMAND_LIST_TYPE_COPY);
 }
 
 UploadContext::~UploadContext()

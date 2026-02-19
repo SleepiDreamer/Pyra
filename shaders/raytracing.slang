@@ -93,7 +93,8 @@ void ClosestHit(inout Payload payload, in BuiltInTriangleIntersectionAttributes 
     uint i2 = indices[baseIdx + 2];
 
     float2 uv = sampleTriangle(vertices[i0].uv, vertices[i1].uv, vertices[i2].uv, attr.barycentrics);
-    float3 normal = sampleTriangle(vertices[i0].normal, vertices[i1].normal, vertices[i2].normal, attr.barycentrics).xyz; // TODO: multiply by model matrix
+    float3 normal = sampleTriangle(vertices[i0].normal, vertices[i1].normal, vertices[i2].normal, attr.barycentrics) .xyz;
+    normal = normalize(mul(normal, (float3x3)WorldToObject3x4()));
     float3 hitPoint = WorldRayOrigin() + WorldRayDirection() * RayTCurrent();
 
     Material material = materials[materialIndex];

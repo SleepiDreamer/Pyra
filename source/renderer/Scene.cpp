@@ -40,14 +40,12 @@ void Scene::LoadModel(const std::string& path)
 
 	commandList = m_context.commandQueue->GetCommandList();
 
-	for (auto& model : m_models)
+	auto& newModel = m_models.back();
+	for (auto& tex : newModel.GetTextures())
 	{
-		for (auto& tex : model.GetTextures())
+		if (tex.GetResource())
 		{
-			if (tex.GetResource())
-			{
-				TransitionResource(commandList.Get(), tex.GetResource(), D3D12_RESOURCE_STATE_COMMON, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
-			}
+			TransitionResource(commandList.Get(), tex.GetResource(), D3D12_RESOURCE_STATE_COMMON, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
 		}
 	}
 

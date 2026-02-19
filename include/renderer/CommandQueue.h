@@ -6,7 +6,7 @@
 class CommandQueue
 {
 public:
-    CommandQueue(const Microsoft::WRL::ComPtr<ID3D12Device10>& device, D3D12_COMMAND_LIST_TYPE type = D3D12_COMMAND_LIST_TYPE_DIRECT);
+    CommandQueue(const Microsoft::WRL::ComPtr<ID3D12Device10>& device, const std::string& name, D3D12_COMMAND_LIST_TYPE type = D3D12_COMMAND_LIST_TYPE_DIRECT);
     virtual ~CommandQueue();
 
     // Get an available command list from the command queue.
@@ -14,7 +14,7 @@ public:
 
     // Execute a command list.
     // Returns the fence value to wait for for this command list.
-    uint64_t ExecuteCommandList(Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList4> commandList);
+    uint64_t ExecuteCommandList(const Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList4>& commandList);
 
     uint64_t Signal();
     bool IsFenceComplete(uint64_t fenceValue) const;
@@ -25,7 +25,7 @@ public:
 
 protected:
     Microsoft::WRL::ComPtr<ID3D12CommandAllocator> CreateCommandAllocator() const;
-    Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList4> CreateCommandList(Microsoft::WRL::ComPtr<ID3D12CommandAllocator> allocator) const;
+    Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList4> CreateCommandList(const Microsoft::WRL::ComPtr<ID3D12CommandAllocator>& allocator) const;
 
 private:
     // Keep track of command allocators that are "in-flight"
@@ -47,4 +47,5 @@ private:
 
     CommandAllocatorQueue m_CommandAllocatorQueue;
     CommandListQueue m_CommandListQueue;
+	std::string m_name;
 };

@@ -50,6 +50,7 @@ void RTPipeline::CreateLocalRootSignature(ID3D12Device10* device)
     ComPtr<ID3DBlob> sigBlob, errorBlob;
     ThrowIfFailed(D3DX12SerializeVersionedRootSignature(&desc, D3D_ROOT_SIGNATURE_VERSION_1_1, &sigBlob, &errorBlob));
     ThrowIfFailed(device->CreateRootSignature(0, sigBlob->GetBufferPointer(), sigBlob->GetBufferSize(), IID_PPV_ARGS(&m_localRootSignature)));
+	m_localRootSignature->SetName(L"RT Local Root Signature");
 }
 
 void RTPipeline::CreatePSO(ID3D12Device10* device)
@@ -86,6 +87,7 @@ void RTPipeline::CreatePSO(ID3D12Device10* device)
     pipelineConfig->Config(2); // max recursion depth
 
     ThrowIfFailed(device->CreateStateObject(psoDesc, IID_PPV_ARGS(&m_pso)));
+	m_pso->SetName(L"RT PSO");
 }
 
 void RTPipeline::CreateShaderTables(ID3D12Device10* device, const std::vector<HitGroupRecord>& hitGroupRecords)
@@ -111,6 +113,7 @@ void RTPipeline::CreateShaderTables(ID3D12Device10* device, const std::vector<Hi
         auto bufDesc = CD3DX12_RESOURCE_DESC::Buffer(tableSize);
         ThrowIfFailed(device->CreateCommittedResource(&heapProps, D3D12_HEAP_FLAG_NONE,
 					  &bufDesc, D3D12_RESOURCE_STATE_GENERIC_READ, nullptr, IID_PPV_ARGS(&m_raygenTable)));
+        m_raygenTable->SetName(L"Raygen Table");
 
         void* mapped = nullptr;
         m_raygenTable->Map(0, nullptr, &mapped);
@@ -125,6 +128,7 @@ void RTPipeline::CreateShaderTables(ID3D12Device10* device, const std::vector<Hi
         auto bufDesc = CD3DX12_RESOURCE_DESC::Buffer(tableSize);
         ThrowIfFailed(device->CreateCommittedResource(&heapProps, D3D12_HEAP_FLAG_NONE,
 					  &bufDesc, D3D12_RESOURCE_STATE_GENERIC_READ, nullptr, IID_PPV_ARGS(&m_missTable)));
+		m_missTable->SetName(L"Miss Table");
 
         void* mapped = nullptr;
         m_missTable->Map(0, nullptr, &mapped);
@@ -140,6 +144,7 @@ void RTPipeline::CreateShaderTables(ID3D12Device10* device, const std::vector<Hi
 		bufDesc.Width = std::max(1u, m_hitGroupRecordSize * m_hitGroupCount);
         ThrowIfFailed(device->CreateCommittedResource(&heapProps, D3D12_HEAP_FLAG_NONE,
 					  &bufDesc, D3D12_RESOURCE_STATE_GENERIC_READ, nullptr, IID_PPV_ARGS(&m_hitGroupTable)));
+		m_hitGroupTable->SetName(L"Hit Group Table");
 
         void* mapped = nullptr;
         m_hitGroupTable->Map(0, nullptr, &mapped);

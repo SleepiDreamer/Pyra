@@ -1,11 +1,12 @@
 #include "CommandQueue.h"
+#include "HelpersDX.h"
 #include <cassert>
 #include <intsafe.h>
 
 using namespace Microsoft::WRL;
 
-CommandQueue::CommandQueue(const ComPtr<ID3D12Device10>& device, const D3D12_COMMAND_LIST_TYPE type)
-    : m_d3d12Device(device), m_commandListType(type), m_FenceValue(0)
+CommandQueue::CommandQueue(const ComPtr<ID3D12Device10>& device, const std::string& name, const D3D12_COMMAND_LIST_TYPE type)
+    : m_d3d12Device(device), m_commandListType(type), m_FenceValue(0), m_name(name)
 {
     D3D12_COMMAND_QUEUE_DESC desc = {};
     desc.Type = type;
@@ -14,7 +15,9 @@ CommandQueue::CommandQueue(const ComPtr<ID3D12Device10>& device, const D3D12_COM
     desc.NodeMask = 0;
 
     ThrowIfFailed(m_d3d12Device->CreateCommandQueue(&desc, IID_PPV_ARGS(&m_d3d12CommandQueue)));
+	m_d3d12CommandQueue->SetName(std::wstring(m_name.begin(), m_name.end()).c_str());
     ThrowIfFailed(m_d3d12Device->CreateFence(m_FenceValue, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&m_d3d12Fence)));
+	m_d3d12Fence->SetName(ToLPCWSTR(m_name + " Fence"));
 
     m_FenceEvent = ::CreateEvent(NULL, FALSE, FALSE, NULL);
     assert(m_FenceEvent && "Failed to create fence event handle.");
@@ -49,11 +52,12 @@ ComPtr<ID3D12CommandAllocator> CommandQueue::CreateCommandAllocator() const
 {
     ComPtr<ID3D12CommandAllocator> commandAllocator;
     ThrowIfFailed(m_d3d12Device->CreateCommandAllocator(m_commandListType, IID_PPV_ARGS(&commandAllocator)));
+	commandAllocator->SetName(ToLPCWSTR(m_name + " Command Allocator"));
 
     return commandAllocator;
 }
 
-ComPtr<ID3D12GraphicsCommandList4> CommandQueue::CreateCommandList(ComPtr<ID3D12CommandAllocator> allocator) const
+ComPtr<ID3D12GraphicsCommandList4> CommandQueue::CreateCommandList(const ComPtr<ID3D12CommandAllocator>& allocator) const
 {
     ComPtr<ID3D12GraphicsCommandList4> commandList;
     ThrowIfFailed(m_d3d12Device->CreateCommandList(0,
@@ -79,6 +83,7 @@ ComPtr<ID3D12GraphicsCommandList4> CommandQueue::GetCommandList()
     else
     {
         commandAllocator = CreateCommandAllocator();
+		commandAllocator->SetName(ToLPCWSTR(m_name + " Command Allocator"));
     }
 
     if (!m_CommandListQueue.empty())
@@ -91,6 +96,7 @@ ComPtr<ID3D12GraphicsCommandList4> CommandQueue::GetCommandList()
     else
     {
         commandList = CreateCommandList(commandAllocator);
+		commandList->SetName(ToLPCWSTR(m_name + " Command List"));
     }
 
     // Associate the command allocator with the command list so that it can be
@@ -102,7 +108,7 @@ ComPtr<ID3D12GraphicsCommandList4> CommandQueue::GetCommandList()
 
 // Execute a command list.
 // Returns the fence value to wait for this command list.
-uint64_t CommandQueue::ExecuteCommandList(ComPtr<ID3D12GraphicsCommandList4> commandList)
+uint64_t CommandQueue::ExecuteCommandList(const ComPtr<ID3D12GraphicsCommandList4>& commandList)
 {
     commandList->Close();
 

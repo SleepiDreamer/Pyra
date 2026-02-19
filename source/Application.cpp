@@ -5,6 +5,7 @@
 
 #define GLFW_INCLUDE_NONE
 #include <glfw3.h>
+#include <backends/imgui_impl_glfw.h>
 
 Application::Application(const bool debugLayer)
 {
@@ -22,6 +23,7 @@ Application::Application(const bool debugLayer)
 	glfwSetWindowUserPointer(glfwWindow, this);
 	glfwSetKeyCallback(glfwWindow, KeyCallback);
 	glfwSetWindowSizeCallback(glfwWindow, WindowSizeCallback);
+	glfwSetDropCallback(glfwWindow, DropCallback);
 
 	glfwGetCursorPos(glfwWindow, &m_mouseXPrev, &m_mouseYPrev);
 
@@ -101,6 +103,11 @@ void Application::Update(const float deltaTime)
 
 void Application::KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
+	ImGui_ImplGlfw_KeyCallback(window, key, scancode, action, mods);
+
+	if (ImGui::GetIO().WantCaptureKeyboard)
+		return;
+
 	auto* app = static_cast<Application*>(glfwGetWindowUserPointer(window));
 	if ((key == GLFW_KEY_ENTER && action == GLFW_PRESS) && (mods & GLFW_MOD_ALT))
 	{
@@ -132,5 +139,17 @@ void Application::WindowSizeCallback(GLFWwindow* window, const int width, const 
 	if (app && app->m_renderer)
 	{
 		app->m_renderer->Resize(width, height);
+	}
+}
+
+void Application::DropCallback(GLFWwindow* window, const int count, const char** paths)
+{
+	auto* app = static_cast<Application*>(glfwGetWindowUserPointer(window));
+	if (app && app->m_renderer)
+	{
+		for (int i = 0; i < count; ++i)
+		{
+			app->m_renderer->LoadModel(paths[i]);
+		}
 	}
 }

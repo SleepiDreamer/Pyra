@@ -46,6 +46,23 @@ inline std::wstring ToWideString(const char* str)
     return wstr;
 }
 
+inline std::wstring ToWideString(const std::string& str)
+{
+    return ToWideString(str.c_str());
+}
+
+inline LPCWSTR ToLPCWSTR(const char* str)
+{
+    static std::wstring wstr;
+    wstr = ToWideString(str);
+    return wstr.c_str();
+}
+
+inline LPCWSTR ToLPCWSTR(const std::string& str)
+{
+    return ToLPCWSTR(str.c_str());
+}
+
 inline void tag_invoke(ImReflect::ImInput_t, const char* label, BOOL& value, ImSettings& settings, ImResponse& response) {
     auto& bool_response = response.get<BOOL>();
 

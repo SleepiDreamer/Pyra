@@ -144,7 +144,9 @@ void SwapChain::ToggleFullscreen()
 		const GLFWvidmode* mode = glfwGetVideoMode(monitor);
 
 		glfwSetWindowAttrib(m_window.GetGLFWWindow(), GLFW_DECORATED, GLFW_FALSE);
-		glfwSetWindowPos(m_window.GetGLFWWindow(), 0, 0);
+		int mx, my;
+		glfwGetMonitorPos(monitor, &mx, &my);
+		glfwSetWindowPos(m_window.GetGLFWWindow(), mx, my);
 		glfwSetWindowSize(m_window.GetGLFWWindow(), mode->width, mode->height);
 
 		std::cout << "Entered Borderless Fullscreen: " << mode->width << "x" << mode->height << "\n";

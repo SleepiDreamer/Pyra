@@ -1,3 +1,4 @@
+#include <windows.h>
 #include "Application.h"
 
 #include <windows.h>

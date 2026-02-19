@@ -12,7 +12,7 @@ class Scene
 {
 public:
 	Scene(RenderContext& context);
-	~Scene() = default;
+	~Scene();
 
 	void LoadModel(const std::string& path);
 	void UploadMaterials();

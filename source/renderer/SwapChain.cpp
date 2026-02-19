@@ -5,7 +5,6 @@
 #include "Window.h"
 #include "CommonDX.h"
 
-#define GLFW_INCLUDE_NONE
 #include <glfw3.h>
 #include <algorithm>
 

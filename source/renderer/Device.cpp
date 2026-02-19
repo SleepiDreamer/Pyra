@@ -70,7 +70,7 @@ void Device::CreateAdapter()
     ThrowIfFailed(m_adapter->GetDesc1(&dxgiAdapterDesc1));
 
     std::wstring gpuName = dxgiAdapterDesc1.Description;
-	std::cout << "GPU: " << std::string(gpuName.begin(), gpuName.end()) << '\n';
+	std::cout << "GPU: " << ToNarrowString(gpuName) << '\n';
 	std::cout << "VRAM: " << round(static_cast<float>(dxgiAdapterDesc1.DedicatedVideoMemory) / 1024.0f / 1024.0f / 1024.0f * 10.0f) / 10.0f << " GB" << '\n';
 	std::cout << '\n';
 }

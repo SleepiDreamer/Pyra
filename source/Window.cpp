@@ -1,9 +1,10 @@
-#include "Window.h"
-
 #define GLFW_EXPOSE_NATIVE_WIN32
-#define GLFW_INCLUDE_NONE
+#include <windows.h>
 #include <glfw3.h>
 #include <glfw3native.h>
+
+#include "Window.h"
+
 #include <assert.h>
 #include <iostream>
 

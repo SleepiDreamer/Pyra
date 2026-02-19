@@ -12,6 +12,8 @@ Scene::Scene(RenderContext& context)
 {
 }
 
+Scene::~Scene() = default;
+
 void Scene::LoadModel(const std::string& path)
 {
 	auto commandList = m_context.commandQueue->GetCommandList();

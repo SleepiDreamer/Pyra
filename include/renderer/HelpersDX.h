@@ -63,6 +63,20 @@ inline LPCWSTR ToLPCWSTR(const std::string& str)
     return ToLPCWSTR(str.c_str());
 }
 
+inline std::string ToNarrowString(const wchar_t* wstr)
+{
+    if (!wstr || !*wstr) return {};
+    const int len = WideCharToMultiByte(CP_UTF8, 0, wstr, -1, nullptr, 0, nullptr, nullptr);
+    std::string str(len - 1, '\0');
+    WideCharToMultiByte(CP_UTF8, 0, wstr, -1, str.data(), len, nullptr, nullptr);
+    return str;
+}
+
+inline std::string ToNarrowString(const std::wstring& wstr)
+{
+    return ToNarrowString(wstr.c_str());
+}
+
 inline void tag_invoke(ImReflect::ImInput_t, const char* label, BOOL& value, ImSettings& settings, ImResponse& response) {
     auto& bool_response = response.get<BOOL>();
 

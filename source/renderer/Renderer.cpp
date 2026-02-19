@@ -19,6 +19,7 @@
 
 #include <imgui.h>
 #include <iostream>
+#include <chrono>
 
 using namespace Microsoft::WRL;
 
@@ -191,8 +192,8 @@ void Renderer::Render(const float deltaTime)
 		m_rootSignature->SetRootSRV(commandList.Get(), m_scene->GetMaterialsBufferAddress(), "materials");
 
 		auto dispatchDesc = m_rtPipeline->GetDispatchRaysDesc();
-		dispatchDesc.Width = m_swapChain->GetViewport().Width;
-		dispatchDesc.Height = m_swapChain->GetViewport().Height;
+		dispatchDesc.Width = static_cast<UINT>(m_swapChain->GetViewport().Width);
+		dispatchDesc.Height = static_cast<UINT>(m_swapChain->GetViewport().Height);
 		commandList->DispatchRays(&dispatchDesc);
 	}
 

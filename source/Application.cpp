@@ -1,10 +1,11 @@
+#include <windows.h>
+#include <glfw3.h>
+
 #include "Application.h"
 #include "Window.h"
 #include "Renderer.h"
 #include "Camera.h"
 
-#define GLFW_INCLUDE_NONE
-#include <glfw3.h>
 #include <backends/imgui_impl_glfw.h>
 
 Application::Application(const bool debugLayer)

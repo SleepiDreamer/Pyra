@@ -35,7 +35,7 @@ public:
 	void SetCamera(std::shared_ptr<Camera> camera) { m_camera = std::move(camera); }
 	void LoadModel(const std::string& path);
 	void LoadHDRI(const std::string& path);
-	void Resize(int width, int height);
+	void Resize(int width, int height) const;
 
 private:
 	Window& m_window;

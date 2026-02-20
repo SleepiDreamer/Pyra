@@ -17,8 +17,15 @@ Scene::Scene(RenderContext& context)
 
 Scene::~Scene() = default;
 
-void Scene::LoadModel(const std::string& path)
+bool Scene::LoadModel(const std::string& path)
 {
+	std::string extension = path.substr(path.find_last_of('.'));
+	if (extension != ".gltf" && extension != ".glb")
+	{
+		std::cerr << "Unsupported model format: " << extension << "\nPlease use .gltf or .glb\n";
+		return false;
+	}
+
 	std::cout << "Loading model: " << path;
 	std::chrono::steady_clock::time_point startTime = std::chrono::steady_clock::now();
 
@@ -63,6 +70,8 @@ void Scene::LoadModel(const std::string& path)
 	auto time = std::chrono::steady_clock::now() - startTime;
 	std::cout << "\r";
 	std::cout << "Loaded model: " << path << ". Took " << std::chrono::duration_cast<std::chrono::milliseconds>(time).count() / 1000.0 << " s.\n";
+
+	return true;
 }
 
 void Scene::UploadMaterialData()
@@ -129,6 +138,13 @@ std::vector<HitGroupRecord> Scene::GetHitGroupRecords() const
 
 void Scene::LoadHDRI(const std::string& path)
 {
+	std::string extension = path.substr(path.find_last_of('.'));
+	if (extension != ".hdr")
+	{
+		std::cerr << "Unsupported HDRI format: " << extension << "\nPlease use .hdr\n";
+		return;
+	}
+	
 	m_hdri = std::make_unique<Texture>();
 
 	std::cout << "Loading HDRI: " << path << "\r";

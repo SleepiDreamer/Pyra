@@ -15,7 +15,7 @@ public:
 	Scene(RenderContext& context);
 	~Scene();
 
-	void LoadModel(const std::string& path);
+	bool LoadModel(const std::string& path);
 	void LoadHDRI(const std::string& path);
 
 	[[nodiscard]] const std::vector<Model>& GetModels() const { return m_models; }

@@ -136,12 +136,12 @@ void ClosestHit(inout Payload payload, in BuiltInTriangleIntersectionAttributes 
 
     float3 hitPoint = WorldRayOrigin() + WorldRayDirection() * RayTCurrent();
 
-    float3 albedo = sampleOrDefault(material.albedoIndex, linearSampler, uv, float4(1)).rgb * material.albedoFactor;
+    float3 albedo = sampleOrDefault(material.albedoIndex, linearSampler, uv, material.albedoFactor);
     if (renderSettings.whiteFurnace) albedo = float3(1);
-    float3 emission = sampleOrDefault(material.emissiveIndex, linearSampler, uv, float4(0)).rgb * material.emissiveFactor;
-    float2 metallicRoughness = sampleOrDefault(material.metallicRoughnessIndex, linearSampler, uv, float4(1)).gb;
-    float roughness = max(metallicRoughness.x * material.roughnessFactor, 0.0001);
-    float metallic = metallicRoughness.y * material.metallicFactor;
+    float3 emission = sampleOrDefault(material.emissiveIndex, linearSampler, uv, material.emissiveFactor);
+    float2 metallicRoughness = sampleOrDefault(material.metallicRoughnessIndex, linearSampler, uv, float3(1, material.metallicFactor, material.roughnessFactor)).gb;
+    float roughness = max(metallicRoughness.x, 0.0001);
+    float metallic = metallicRoughness.y;
 
     switch (renderSettings.debugMode)
     {
@@ -191,6 +191,6 @@ void Miss(inout Payload payload)
     }
     else
     {
-        payload.radiance += float3(1) * renderSettings.skyExposure * payload.throughput * (WorldRayDirection().y + 1.1) / 2.1;
+        payload.radiance += float3(0.6, 0.8, 1.0) * renderSettings.skyExposure * payload.throughput * (WorldRayDirection().y + 1.1) / 2.1;
     }
 }

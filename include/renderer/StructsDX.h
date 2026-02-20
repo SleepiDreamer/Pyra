@@ -66,7 +66,7 @@ struct RenderSettings
 {
 	DebugMode debugMode = None;
 	uint32_t bounces = 2;
-	float exposure = 10.0f;
+	float exposure = 25.0f;
 	float skyExposure = 1.0f;
 	float lightExposure = 1.0f;
 	int32_t hdriIndex = -1;

@@ -17,7 +17,7 @@ Application::Application(const bool debugLayer)
 	m_camera->SetDirection(glm::vec3(0.0f, 0.0f, -1.0f));
 	m_camera->m_fov = 60.0f;
 	m_renderer->SetCamera(m_camera);
-	m_renderer->LoadModel("assets/models/FlightHelmet/FlightHelmet.gltf");
+	m_renderer->LoadModel("assets/models/Sponza/Sponza.gltf");
 	m_renderer->LoadHDRI("assets/environments/cedar_bridge_2_2k.hdr");
 
 	auto glfwWindow = m_window->GetGLFWWindow();
@@ -160,7 +160,15 @@ void Application::DropCallback(GLFWwindow* window, const int count, const char**
 	{
 		for (int i = 0; i < count; ++i)
 		{
-			app->m_renderer->LoadModel(paths[i]);
+			std::string extension = std::string(paths[i]).substr(std::string(paths[i]).find_last_of('.'));
+			if (extension == ".hdr")
+			{
+				app->m_renderer->LoadHDRI(paths[i]);
+			}
+			if (extension == ".gltf" || extension == ".glb")
+			{
+				app->m_renderer->LoadModel(paths[i]);
+			}
 		}
 	}
 }

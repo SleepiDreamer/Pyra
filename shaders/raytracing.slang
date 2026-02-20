@@ -97,7 +97,7 @@ void RayGen()
         ? radiance
         : accumulationBuffer[idx].rgb / (renderSettings.frame + 1);
 
-    if (!renderSettings.debugMode > 0) result = tonemap(result, renderSettings.tonemapper, renderSettings.exposure);
+    if (renderSettings.debugMode == DebugMode::None) result = tonemap(result, renderSettings.tonemapper, renderSettings.exposure);
     outputBuffer[idx] = float4(result, 1.0);
 }
 

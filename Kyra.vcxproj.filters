@@ -261,6 +261,7 @@
     <None Include="shaders\tonemapping\agx.slang" />
     <None Include="shaders\tonemapping\reinhard.slang" />
     <None Include="shaders\pbr.slang" />
+    <None Include="shaders\tonemapping\gt7.slang" />
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="external\glm\glm.natvis" />

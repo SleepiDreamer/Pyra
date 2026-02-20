@@ -57,9 +57,10 @@ enum DebugMode
 enum TonemapOperator
 {
 	Linear = 0,
-	Aces = 1,
-	Reinhard = 2,
-	AgX = 3
+	Aces,
+	Reinhard,
+	AgX,
+	GT7,
 };
 
 struct RenderSettings

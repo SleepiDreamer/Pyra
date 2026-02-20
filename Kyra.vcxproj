@@ -114,6 +114,7 @@
     <None Include="shaders\tonemapping.slang" />
     <None Include="shaders\tonemapping\aces.slang" />
     <None Include="shaders\tonemapping\agx.slang" />
+    <None Include="shaders\tonemapping\gt7.slang" />
     <None Include="shaders\tonemapping\reinhard.slang" />
   </ItemGroup>
   <ItemGroup>

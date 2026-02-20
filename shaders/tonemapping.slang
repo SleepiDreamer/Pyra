@@ -4,6 +4,7 @@ import structs;
 import tonemapping.aces;
 import tonemapping.reinhard;
 import tonemapping.agx;
+import tonemapping.gt7;
 
 public float3 tonemap(float3 color, TonemapOperator op, float exposure)
 {
@@ -15,6 +16,7 @@ public float3 tonemap(float3 color, TonemapOperator op, float exposure)
         case TonemapOperator::Aces:     return tonemapACES(color);
         case TonemapOperator::Reinhard: return tonemapReinhard(color);
         case TonemapOperator::AgX:      return tonemapAgX(color);
+        case TonemapOperator::GT7:      return tonemapGT7(color, false, 800.0f);
         default:                        return color;
     }
 }

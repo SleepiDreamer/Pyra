@@ -18,6 +18,8 @@ int main(int argc, char* argv[])
         }
 
         Application app{ enableDebug };
+
+		app.Run();
     }
     catch (const std::exception& e)
     {

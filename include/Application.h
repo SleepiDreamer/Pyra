@@ -12,8 +12,8 @@ public:
 	Application(bool debugLayer);
 	~Application();
 
+	void Run();
 	void Update(float deltaTime);
-
 
 private:
 	static void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods);

@@ -29,9 +29,19 @@ Application::Application(const bool debugLayer)
 	glfwSetDropCallback(glfwWindow, DropCallback);
 
 	glfwGetCursorPos(glfwWindow, &m_mouseXPrev, &m_mouseYPrev);
+}
+
+Application::~Application()
+{
+	glfwTerminate();
+}
+
+void Application::Run()
+{
+	auto glfwWindow = m_window->GetGLFWWindow();
 
 	float deltaTime = 0.0f;
-	static float lastFrameTime = 0.0f;
+	float lastFrameTime = 0.0f;
 	while (!glfwWindowShouldClose(glfwWindow))
 	{
 		float currentFrameTime = static_cast<float>(glfwGetTime());
@@ -45,11 +55,6 @@ Application::Application(const bool debugLayer)
 
 		lastFrameTime = currentFrameTime;
 	}
-}
-
-Application::~Application()
-{
-	glfwTerminate();
 }
 
 void Application::Update(const float deltaTime)

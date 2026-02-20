@@ -9,7 +9,7 @@ Shader::Shader(ShaderCompiler& compiler, std::string filePath, const std::vector
 {
     if (std::filesystem::exists(m_filePath))
     {
-	    m_lastWriteTime = std::filesystem::last_write_time(m_filePath);
+        m_lastWriteTime = std::filesystem::file_time_type::clock::now();
     }
 
     Reload();
@@ -21,7 +21,16 @@ bool Shader::NeedsReload() const
 {
     try
     {
-        return std::filesystem::last_write_time(m_filePath) > m_lastWriteTime;
+        for (const auto& entry : std::filesystem::directory_iterator("shaders/")) {
+            if (entry.is_regular_file() && entry.last_write_time() > m_lastWriteTime) {
+                auto ext = entry.path().extension();
+                if (ext == ".slang" )
+                {
+					return true;
+                }
+            }
+        }
+        return false;
     }
     catch (const std::filesystem::filesystem_error&)
     {
@@ -36,14 +45,14 @@ bool Shader::Reload()
     if (!result.success)
     {
         std::cerr << "Failed to compile shader: " << m_filePath << "\n" << result.errorLog << "\n";
-        m_lastWriteTime = std::filesystem::last_write_time(m_filePath);
+        m_lastWriteTime = std::filesystem::file_time_type::clock::now();
 		m_lastCompileError = result.errorLog;
 		m_lastCompileFailed = true;
         return false;
     }
 
     m_blob = std::move(result.blob);
-    m_lastWriteTime = std::filesystem::last_write_time(m_filePath);
+    m_lastWriteTime = std::filesystem::file_time_type::clock::now();
 	m_lastCompileFailed = false;
     return true;
 }

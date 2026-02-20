@@ -9,7 +9,7 @@ public struct [raypayload] Payload
     public bool done : write(caller, closesthit, miss) : read(caller, closesthit, miss);
     public float3 nextOrigin : write(caller, closesthit) : read(caller);
     public float3 nextDirection : write(caller, closesthit) : read(caller);
-    public PathTracingRNG rng : write(caller, closesthit) : read(caller, closesthit);
+    public RNG rng : write(caller, closesthit) : read(caller, closesthit);
 };
 
 public struct Vertex

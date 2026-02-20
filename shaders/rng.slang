@@ -1,25 +1,25 @@
 module rng;
 import random.xxhash32;
 
-public struct PathTracingRNG
+public struct RNG
 {
-    uint pixel;
-    uint sample;
-    uint dimension;
+    public uint pixel;
+    public uint sample;
+    public uint dimension;
 
     [mutating]
-    public static PathTracingRNG create(uint2 pixelCoord, uint screenWidth, uint sampleIndex)
+    public static RNG create(uint2 pixelCoord, uint screenWidth, uint sampleIndex)
     {
-        PathTracingRNG rng;
+        RNG rng;
         rng.pixel = pixelCoord.y * screenWidth + pixelCoord.x;
         rng.sample = sampleIndex;
         rng.dimension = 0;
         return rng;
     }
 
-    public static PathTracingRNG create(uint pixelIndex, uint sampleIndex)
+    public static RNG create(uint pixelIndex, uint sampleIndex)
     {
-        PathTracingRNG rng;
+        RNG rng;
         rng.pixel = pixelIndex;
         rng.sample = sampleIndex;
         rng.dimension = 0;
@@ -54,5 +54,10 @@ public struct PathTracingRNG
     public float hashDimensionFloat(uint dim)
     {
         return hashDimension(dim) * 0x1p-32f;
+    }
+
+    public float2 hashDimensionFloat2(uint dim)
+    {
+        return float2(hashDimensionFloat(dim), hashDimensionFloat(dim + 1));
     }
 }

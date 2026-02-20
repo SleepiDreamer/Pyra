@@ -3,6 +3,7 @@ import helpers;
 import settings;
 import rng;
 import random.sampling;
+import pbr;
 import camera;
 import tonemapping;
 
@@ -33,7 +34,7 @@ void RayGen()
     payload.throughput = float3(1.0, 1.0, 1.0);
     payload.done = false;
     payload.depth = 0;
-    payload.rng = PathTracingRNG.create(idx, uint(size.x), renderSettings.frame);
+    payload.rng = RNG.create(idx, uint(size.x), renderSettings.frame);
     uv += payload.rng.nextFloat2() / size; // TODO: pass jitter from CPU for DLSS
 
     Camera cam;
@@ -130,8 +131,9 @@ void ClosestHit(inout Payload payload, in BuiltInTriangleIntersectionAttributes 
 
     payload.radiance += emission * payload.throughput * renderSettings.lightExposure;
 
-    payload.throughput *= albedo; // TODO: implement PBR
-    payload.nextDirection = tangentToWorld(sampleCosineHemisphere(payload.rng.nextFloat2()), normal);
+    float3 wo;
+    payload.throughput *= PBRIndirect(payload.rng, normal, normal, -WorldRayDirection(), albedo, roughness, metallic, wo);
+    payload.nextDirection = wo;
     payload.nextOrigin = OffsetRay(hitPoint, normal);
 }
 

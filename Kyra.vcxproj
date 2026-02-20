@@ -236,7 +236,6 @@ xcopy /D /Y "$(SolutionDir)external\dxc\bin\*.dll" "$(OutDir)"</Command>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(ProjectDir)external;$(ProjectDir)external\GLFW\lib;$(ProjectDir)external\slang\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>glfw3.lib;d3d12.lib;dxgi.lib;dxguid.lib;slang.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalOptions>/NODEFAULTLIB:MSVCRT %(AdditionalOptions)</AdditionalOptions>
     </Link>
     <PostBuildEvent>
       <Command>xcopy /D /Y "$(SolutionDir)external\slang\bin\*.dll" "$(OutDir)"

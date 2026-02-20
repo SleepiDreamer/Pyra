@@ -51,18 +51,6 @@ inline std::wstring ToWideString(const std::string& str)
     return ToWideString(str.c_str());
 }
 
-inline LPCWSTR ToLPCWSTR(const char* str)
-{
-    static std::wstring wstr;
-    wstr = ToWideString(str);
-    return wstr.c_str();
-}
-
-inline LPCWSTR ToLPCWSTR(const std::string& str)
-{
-    return ToLPCWSTR(str.c_str());
-}
-
 inline std::string ToNarrowString(const wchar_t* wstr)
 {
     if (!wstr || !*wstr) return {};

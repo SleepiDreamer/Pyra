@@ -21,7 +21,7 @@ bool Shader::NeedsReload() const
 {
     try
     {
-        for (const auto& entry : std::filesystem::directory_iterator("shaders/")) {
+        for (const auto& entry : std::filesystem::recursive_directory_iterator("shaders/")) {
             if (entry.is_regular_file() && entry.last_write_time() > m_lastWriteTime) {
                 auto ext = entry.path().extension();
                 if (ext == ".slang" )

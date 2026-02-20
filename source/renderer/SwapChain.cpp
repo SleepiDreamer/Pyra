@@ -203,7 +203,7 @@ void SwapChain::Present()
 	m_currentBackBufferIndex = m_swapChain->GetCurrentBackBufferIndex();
 }
 
-void SwapChain::Transition(ID3D12GraphicsCommandList* commandList, D3D12_RESOURCE_STATES newState) const
+void SwapChain::Transition(ID3D12GraphicsCommandList* commandList, const D3D12_RESOURCE_STATES newState)
 {
 	if (newState != m_currentState)
 	{

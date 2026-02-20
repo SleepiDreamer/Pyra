@@ -47,6 +47,7 @@ struct GPUBuffer
         {
             allocation->Release();
             allocation = nullptr;
+            resource->Release();
             resource = nullptr;
             size = 0;
         }

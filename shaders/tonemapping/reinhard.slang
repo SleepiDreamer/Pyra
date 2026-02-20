@@ -1,4 +1,4 @@
-module agx;
+module reinhard;
 
 public float3 tonemapReinhard(float3 color)
 {

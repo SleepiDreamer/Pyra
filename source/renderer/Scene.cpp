@@ -100,6 +100,10 @@ void Scene::UploadMaterialData()
 		D3D12_RESOURCE_FLAG_NONE, D3D12_HEAP_TYPE_DEFAULT, "Materials");
 	m_context.uploadContext->Upload(m_materialData, materials.data(), size);
 
+	if (m_materialSRV.cpuHandle.ptr != 0)
+	{
+		m_context.descriptorHeap->Free(m_materialSRV);
+	}
 	m_materialSRV = m_context.descriptorHeap->Allocate();
 	D3D12_SHADER_RESOURCE_VIEW_DESC desc{};
 	desc.ViewDimension = D3D12_SRV_DIMENSION_BUFFER;

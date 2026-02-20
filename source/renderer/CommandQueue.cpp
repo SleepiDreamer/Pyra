@@ -17,7 +17,7 @@ CommandQueue::CommandQueue(const ComPtr<ID3D12Device10>& device, const std::stri
     ThrowIfFailed(m_d3d12Device->CreateCommandQueue(&desc, IID_PPV_ARGS(&m_d3d12CommandQueue)));
 	m_d3d12CommandQueue->SetName(std::wstring(m_name.begin(), m_name.end()).c_str());
     ThrowIfFailed(m_d3d12Device->CreateFence(m_FenceValue, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&m_d3d12Fence)));
-	m_d3d12Fence->SetName(ToLPCWSTR(m_name + " Fence"));
+	m_d3d12Fence->SetName(ToWideString(m_name + " Fence").c_str());
 
     m_FenceEvent = ::CreateEvent(NULL, FALSE, FALSE, NULL);
     assert(m_FenceEvent && "Failed to create fence event handle.");
@@ -52,7 +52,7 @@ ComPtr<ID3D12CommandAllocator> CommandQueue::CreateCommandAllocator() const
 {
     ComPtr<ID3D12CommandAllocator> commandAllocator;
     ThrowIfFailed(m_d3d12Device->CreateCommandAllocator(m_commandListType, IID_PPV_ARGS(&commandAllocator)));
-	commandAllocator->SetName(ToLPCWSTR(m_name + " Command Allocator"));
+	commandAllocator->SetName(ToWideString(m_name + " Command Allocator").c_str());
 
     return commandAllocator;
 }
@@ -83,7 +83,7 @@ ComPtr<ID3D12GraphicsCommandList4> CommandQueue::GetCommandList()
     else
     {
         commandAllocator = CreateCommandAllocator();
-		commandAllocator->SetName(ToLPCWSTR(m_name + " Command Allocator"));
+		commandAllocator->SetName(ToWideString(m_name + " Command Allocator").c_str());
     }
 
     if (!m_CommandListQueue.empty())
@@ -96,7 +96,7 @@ ComPtr<ID3D12GraphicsCommandList4> CommandQueue::GetCommandList()
     else
     {
         commandList = CreateCommandList(commandAllocator);
-		commandList->SetName(ToLPCWSTR(m_name + " Command List"));
+		commandList->SetName(ToWideString(m_name + " Command List").c_str());
     }
 
     // Associate the command allocator with the command list so that it can be

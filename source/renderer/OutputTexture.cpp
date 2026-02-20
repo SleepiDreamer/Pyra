@@ -51,7 +51,7 @@ void OutputBuffer::Resize(ID3D12Device* device, const uint32_t width, const uint
     Create(device, width, height);
 }
 
-void OutputBuffer::Transition(ID3D12GraphicsCommandList* commandList, D3D12_RESOURCE_STATES newState) const
+void OutputBuffer::Transition(ID3D12GraphicsCommandList* commandList, const D3D12_RESOURCE_STATES newState)
 {
     if (newState != m_currentState)
     {

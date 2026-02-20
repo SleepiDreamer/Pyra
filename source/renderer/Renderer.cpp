@@ -27,7 +27,6 @@ using namespace Microsoft::WRL;
 // - explicit lights
 // - DLSS SR & RR
 // - Tonemapping pipeline
-// - hot reload for multiple files
 
 Renderer::Renderer(Window& window, bool debug)
 	: m_window(window), m_prevCamData()
@@ -239,8 +238,6 @@ void Renderer::Render(const float deltaTime)
 			commandList->SetDescriptorHeaps(1, heaps);
 
 			m_imgui->EndFrame(commandList.Get());
-
-			m_swapChain->Transition(commandList.Get(), D3D12_RESOURCE_STATE_PRESENT);
 		}
 
 		m_swapChain->Transition(commandList.Get(), D3D12_RESOURCE_STATE_PRESENT);

@@ -17,13 +17,14 @@ Application::Application(const bool debugLayer)
 	m_camera->SetDirection(glm::vec3(0.0f, 0.0f, -1.0f));
 	m_camera->m_fov = 60.0f;
 	m_renderer->SetCamera(m_camera);
-	m_renderer->LoadModel("assets/models/NormalTestBall.glb");
+	m_renderer->LoadModel("assets/models/UltimateRTX.glb");
 	m_renderer->LoadHDRI("assets/environments/cedar_bridge_2_2k.hdr");
 
 	auto glfwWindow = m_window->GetGLFWWindow();
 
 	glfwSetWindowUserPointer(glfwWindow, this);
 	glfwSetKeyCallback(glfwWindow, KeyCallback);
+	glfwSetScrollCallback(glfwWindow, ScrollCallback);
 	glfwSetWindowSizeCallback(glfwWindow, WindowSizeCallback);
 	glfwSetDropCallback(glfwWindow, DropCallback);
 
@@ -53,17 +54,18 @@ Application::~Application()
 
 void Application::Update(const float deltaTime)
 {
-	float cameraSpeed = 3.0f;
-	if (glfwGetKey(m_window->GetGLFWWindow(), GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
+	auto window = m_window->GetGLFWWindow();
+
+	float cameraSpeed = m_movementSpeed;
+	if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
 	{
 		cameraSpeed *= 4.0f;
 	}
-	if (glfwGetKey(m_window->GetGLFWWindow(), GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS)
+	if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS)
 	{
 		cameraSpeed *= 0.25f;
 	}
 
-	auto window = m_window->GetGLFWWindow();
 	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) // W
 	{
 		m_camera->Move(deltaTime * m_camera->GetForward() * cameraSpeed);
@@ -141,6 +143,15 @@ void Application::KeyCallback(GLFWwindow* window, int key, int scancode, int act
 		}
 
 		glfwGetCursorPos(window, &app->m_mouseXPrev, &app->m_mouseYPrev);
+	}
+}
+
+void Application::ScrollCallback(GLFWwindow* window, double xoffset, double yoffset)
+{
+	auto* app = static_cast<Application*>(glfwGetWindowUserPointer(window));
+	if (app)
+	{
+		app->m_movementSpeed = std::powf(app->m_movementSpeed, 1.0f + static_cast<float>(yoffset) * 0.04f);
 	}
 }
 

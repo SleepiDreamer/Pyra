@@ -87,7 +87,7 @@ public float3 PBRIndirect(inout RNG rng, float3 n, float3 g, float3 v, float3 al
     float3 h = GetGGXMicrofacet(rng, roughness, n, v);
     float VdotH = dot(v, h);
     if (VdotH < 0.0)
-    { 
+    {
         l = float3(0);
         return 0.0;
     }
@@ -131,25 +131,10 @@ public float3 PBRIndirect(inout RNG rng, float3 n, float3 g, float3 v, float3 al
     else
     {
         // Diffuse
-        uint dimension = rng.dimension;
         l = tangentToWorld(sampleCosineHemisphere(rng.nextFloat2()), n);
+
         if (dot(l, g) < 0.0)
-        {
-            float2 rand = rng.hashDimensionFloat2(dimension);
-            float r = sqrt(rand.x);
-            float theta = 2.0 * PI * rand.y;
-
-            float x = -r * cos(theta);
-            float y = -r * sin(theta);
-            float z = sqrt(1.0 - rand.x);
-
-            float3 tangent = abs(n.y) < 0.999
-                    ? normalize(cross(float3(0, 1, 0), n))
-                    : normalize(cross(float3(1, 0, 0), n));
-            float3 bitangent = cross(n, tangent);
-
-            l = tangent * x + bitangent * y + n * z;
-        }
+            l = reflect(l, g);
 
         if (dot(g, n) * dot(g, l) < 0.0)
             return 0.0;

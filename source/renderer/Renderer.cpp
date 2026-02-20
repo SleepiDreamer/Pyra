@@ -91,17 +91,17 @@ void Renderer::LoadModel(const std::string& path)
 	if (m_scene->LoadModel(path))
 	{
 		m_rtPipeline->RebuildShaderTables(m_device->GetDevice(), m_scene->GetHitGroupRecords());
-		m_renderSettings.frame = 0;
+		ResetAccumulation();
 	}
 }
 
 void Renderer::LoadHDRI(const std::string& path)
 {
 	m_scene->LoadHDRI(path);
-	m_renderSettings.frame = 0;
+	ResetAccumulation();
 }
 
-void Renderer::Resize(const int width, const int height) const
+void Renderer::Resize(const int width, const int height)
 {
 	if (width == 0 || height == 0)
 	{
@@ -109,6 +109,7 @@ void Renderer::Resize(const int width, const int height) const
 	}
 
 	std::cout << "Window resized: " << width << "x" << height << "\n";
+	ResetAccumulation();
 	m_commandQueue->Flush();
 	m_swapChain->Resize(width, height, m_device->GetDevice());
 	m_rtOutputBuffer->Resize(m_device->GetDevice(), width, height);
@@ -126,7 +127,7 @@ void Renderer::Render(const float deltaTime)
 	{
 		if (m_rtPipeline->CheckHotReload(m_device->GetDevice(), *m_commandQueue, m_scene->GetHitGroupRecords()))
 		{
-			m_renderSettings.frame = 0;
+			ResetAccumulation();
 		}
 		m_reloadTimer = 0.0f;
 	}
@@ -181,11 +182,11 @@ void Renderer::Render(const float deltaTime)
 		auto responseCamera = ImReflect::Input("Camera", camData, config2);
 		if (responseRender.get<RenderSettings>().is_changed())
 		{
-			m_renderSettings.frame = 0;
+			ResetAccumulation();
 		}
 		if (responseCamera.get<CameraData>().is_changed())
 		{
-			m_renderSettings.frame = 0;
+			ResetAccumulation();
 			m_camera->SetPosition(camData.position);
 			m_camera->SetDirection(camData.forward);
 			m_camera->m_fov = camData.fov;
@@ -249,7 +250,7 @@ void Renderer::Render(const float deltaTime)
 		m_renderSettings.frame++;
 		if (camData.position != m_prevCamData.position || camData.forward != m_prevCamData.forward)
 		{
-			m_renderSettings.frame = 0;
+			ResetAccumulation();
 		}
 		m_prevCamData = camData;
 	}

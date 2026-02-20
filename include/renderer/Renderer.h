@@ -31,11 +31,12 @@ public:
 	~Renderer();
 	void Render(float deltaTime);
 
-	void ToggleFullscreen() const;
 	void SetCamera(std::shared_ptr<Camera> camera) { m_camera = std::move(camera); }
+	void ToggleFullscreen() const;
 	void LoadModel(const std::string& path);
 	void LoadHDRI(const std::string& path);
-	void Resize(int width, int height) const;
+	void Resize(int width, int height);
+	void ResetAccumulation() { if (!m_renderSettings.upscaling) m_renderSettings.frame = 0; }
 
 private:
 	Window& m_window;

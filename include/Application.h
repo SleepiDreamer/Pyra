@@ -14,9 +14,10 @@ public:
 
 	void Update(float deltaTime);
 
-	static void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
 
 private:
+	static void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
+	static void ScrollCallback(GLFWwindow* window, double xoffset, double yoffset);
 	static void WindowSizeCallback(GLFWwindow* window, int width, int height);
 	static void DropCallback(GLFWwindow* window, int count, const char** paths);
 
@@ -26,6 +27,7 @@ private:
 
 	double m_mouseXPrev = 0.0f;
 	double m_mouseYPrev = 0.0f;
+	float m_movementSpeed = 3.0f;
 	bool m_mouseCaptured = false;
 };
 

@@ -42,11 +42,16 @@ struct MaterialData
 enum DebugMode
 {
 	None = 0,
-	Albedo = 1,
-	Emissive = 2,
-	Metallic = 3,
-	Roughness = 4,
-	Normal = 5
+	Albedo,
+	Emissive,
+	Metallic,
+	Roughness,
+	NormalMap,
+	Normal,
+	GeoNormal,
+	Tangent,
+	Bitangent,
+	TangentW,
 };
 
 enum TonemapOperator
@@ -61,7 +66,7 @@ struct RenderSettings
 {
 	DebugMode debugMode = None;
 	uint32_t bounces = 2;
-	float exposure = 1.0f;
+	float exposure = 10.0f;
 	float skyExposure = 1.0f;
 	float lightExposure = 1.0f;
 	uint32_t frame = 0;

@@ -1,4 +1,5 @@
 #include "Model.h"
+#include "MikkT.h"
 #include "GPUAllocator.h"
 #include "CommandQueue.h"
 #include "StructsDX.h"
@@ -173,6 +174,23 @@ void Model::LoadMesh(ID3D12GraphicsCommandList4* commandList, const fastgltf::As
                 indices[i] = static_cast<uint32_t>(i);
         }
 
+        // Load tangents
+        auto tanIt = primitive.findAttribute("TANGENT");
+        if (tanIt != primitive.attributes.end())
+        {
+            const auto& tanAccessor = asset.accessors[tanIt->accessorIndex];
+            fastgltf::iterateAccessorWithIndex<fastgltf::math::fvec4>(asset, tanAccessor,
+                [&](const fastgltf::math::fvec4& tan, size_t idx)
+                {
+                    vertices[idx].tangent = XMFLOAT4(tan.x(), tan.y(), tan.z(), tan.w());
+                }
+            );
+        }
+        else
+        {
+            MikkT::Generate(vertices, indices);
+        }
+
         Mesh mesh;
         mesh.m_materialIndex = primitive.materialIndex.has_value()
             ? static_cast<int32_t>(primitive.materialIndex.value()) : -1;
@@ -190,6 +208,29 @@ void Model::LoadMesh(ID3D12GraphicsCommandList4* commandList, const fastgltf::As
 
 void Model::LoadMaterials(const fastgltf::Asset& asset)
 {
+    std::unordered_set<size_t> linearImages;
+    for (auto& mat : asset.materials)
+    {
+        if (mat.normalTexture.has_value())
+        {
+            auto texIdx = mat.normalTexture->textureIndex;
+            auto imgIdx = asset.textures[texIdx].imageIndex;
+            if (imgIdx.has_value()) linearImages.insert(imgIdx.value());
+        }
+        if (mat.pbrData.metallicRoughnessTexture.has_value())
+        {
+            auto texIdx = mat.pbrData.metallicRoughnessTexture->textureIndex;
+            auto imgIdx = asset.textures[texIdx].imageIndex;
+            if (imgIdx.has_value()) linearImages.insert(imgIdx.value());
+        }
+        if (mat.occlusionTexture.has_value())
+        {
+            auto texIdx = mat.occlusionTexture->textureIndex;
+            auto imgIdx = asset.textures[texIdx].imageIndex;
+            if (imgIdx.has_value()) linearImages.insert(imgIdx.value());
+        }
+    }
+    int index = 0;
     for (auto& image : asset.images)
     {
         auto tex = Texture();
@@ -249,7 +290,10 @@ void Model::LoadMaterials(const fastgltf::Asset& asset)
 
         if (data)
         {
-            tex.Create(m_context, data, width, height, DXGI_FORMAT_R8G8B8A8_UNORM_SRGB, image.name.c_str());
+            DXGI_FORMAT fmt = linearImages.count(index)
+                ? DXGI_FORMAT_R8G8B8A8_UNORM
+                : DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
+            tex.Create(m_context, data, width, height, fmt, image.name.c_str());
             stbi_image_free(data);
         }
         else
@@ -258,6 +302,7 @@ void Model::LoadMaterials(const fastgltf::Asset& asset)
         }
 
         m_textures.push_back(std::move(tex));
+        index++;
     }
 
     for (const auto& mat : asset.materials)

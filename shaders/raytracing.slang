@@ -49,6 +49,8 @@ void RayGen()
     {
         TraceRay(sceneBVH, RAY_FLAG_NONE, 0xFF, 0, 0, 0, ray, payload);
 
+        if (all(payload.throughput == 0.0)) payload.done = true;
+
         if (payload.done)
         {
             break;
@@ -95,7 +97,8 @@ void RayGen()
         ? radiance
         : accumulationBuffer[idx].rgb / (renderSettings.frame + 1);
 
-    outputBuffer[idx] = float4(tonemap(result, renderSettings.tonemapper, renderSettings.exposure), 1.0);
+    if (!renderSettings.debugMode > 0) result = tonemap(result, renderSettings.tonemapper, renderSettings.exposure);
+    outputBuffer[idx] = float4(result, 1.0);
 }
 
 [shader("closesthit")]
@@ -106,35 +109,61 @@ void ClosestHit(inout Payload payload, in BuiltInTriangleIntersectionAttributes 
     uint i1 = indices[baseIdx + 1];
     uint i2 = indices[baseIdx + 2];
 
+    Material material = materials[materialIndex];
     float2 uv = sampleTriangle(vertices[i0].uv, vertices[i1].uv, vertices[i2].uv, attr.barycentrics);
-    float3 normal = sampleTriangle(vertices[i0].normal, vertices[i1].normal, vertices[i2].normal, attr.barycentrics) .xyz;
-    normal = normalize(mul(normal, (float3x3)WorldToObject3x4()));
+
+    float3 geoNormal = sampleTriangle(vertices[i0].normal, vertices[i1].normal, vertices[i2].normal, attr.barycentrics);
+    geoNormal = normalize(mul(geoNormal, (float3x3)WorldToObject3x4()));
+    float tangentW = vertices[i0].tangent.w * -1;
+    float3 tangent = sampleTriangle(vertices[i0].tangent.xyz, vertices[i1].tangent.xyz, vertices[i2].tangent.xyz, attr.barycentrics);
+    tangent = normalize(mul((float3x3)ObjectToWorld3x4(), tangent));
+    float3 bitangent = cross(geoNormal, tangent) * tangentW;
+
+    float3 normal = geoNormal;
+    float3 normalMap = float3(0, 0, 1);
+    if (material.normalIndex != -1)
+    {
+         Texture2D normalTex = DescriptorHandle<Texture2D>(uint2(material.normalIndex, 0));
+         normalMap = normalTex.SampleLevel(linearSampler, uv, 0).rgb * 2 - 1;
+    }
+    float3x3 TBN = float3x3(tangent, bitangent, geoNormal);
+    normal = normalize(mul(normalMap, TBN));
+    if (HitKind() == HIT_KIND_TRIANGLE_BACK_FACE) 
+    {
+        normal = -normal;
+        geoNormal = -geoNormal;
+    }
+
     float3 hitPoint = WorldRayOrigin() + WorldRayDirection() * RayTCurrent();
 
-    Material material = materials[materialIndex];
     float3 albedo = sampleOrDefault(material.albedoIndex, linearSampler, uv, float4(1)).rgb * material.albedoFactor;
     if (renderSettings.whiteFurnace) albedo = float3(1);
     float3 emission = sampleOrDefault(material.emissiveIndex, linearSampler, uv, float4(0)).rgb * material.emissiveFactor;
     float2 metallicRoughness = sampleOrDefault(material.metallicRoughnessIndex, linearSampler, uv, float4(1)).gb;
-    float roughness = metallicRoughness.x * material.roughnessFactor;
+    float roughness = max(metallicRoughness.x * material.roughnessFactor, 0.0001);
     float metallic = metallicRoughness.y * material.metallicFactor;
 
     switch (renderSettings.debugMode)
     {
-        case DebugMode::None: break;
+    case DebugMode::None: break;
         case DebugMode::Albedo:     payload.done = true; payload.radiance = albedo; return;
         case DebugMode::Emissive:   payload.done = true; payload.radiance = emission; return;
         case DebugMode::Metallic:   payload.done = true; payload.radiance = metallic; return;
         case DebugMode::Roughness:  payload.done = true; payload.radiance = roughness; return;
-        case DebugMode::Normal:     payload.done = true; payload.radiance = normal; return;
+        case DebugMode::NormalMap:  payload.done = true; payload.radiance = (normalMap + 1) / 2; return;
+        case DebugMode::Normal:     payload.done = true; payload.radiance = (normal + 1) / 2; return;
+        case DebugMode::GeoNormal:  payload.done = true; payload.radiance = (geoNormal + 1) / 2; return;
+        case DebugMode::Tangent:    payload.done = true; payload.radiance = (tangent + 1) / 2; return;
+        case DebugMode::Bitangent:  payload.done = true; payload.radiance = (bitangent + 1) / 2; return;
+        case DebugMode::TangentW:   payload.done = true; payload.radiance = tangentW; return;
     }
 
     payload.radiance += emission * payload.throughput * renderSettings.lightExposure;
 
     float3 wo;
-    payload.throughput *= PBRIndirect(payload.rng, normal, normal, -WorldRayDirection(), albedo, roughness, metallic, wo);
+    payload.throughput *= PBRIndirect(payload.rng, normal, geoNormal, -WorldRayDirection(), albedo, roughness, metallic, wo);
     payload.nextDirection = wo;
-    payload.nextOrigin = OffsetRay(hitPoint, normal);
+    payload.nextOrigin = OffsetRay(hitPoint, geoNormal);
 }
 
 [shader("miss")]
@@ -152,5 +181,5 @@ void Miss(inout Payload payload)
         payload.radiance += float3(1) * payload.throughput;
     }
 
-    payload.radiance += float3(1) * renderSettings.skyExposure * payload.throughput;
+    payload.radiance += float3(1) * renderSettings.skyExposure * payload.throughput * (WorldRayDirection().y + 1.1) / 2.1;
 }

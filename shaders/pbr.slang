@@ -87,7 +87,10 @@ public float3 PBRIndirect(inout RNG rng, float3 n, float3 g, float3 v, float3 al
     float3 h = GetGGXMicrofacet(rng, roughness, n, v);
     float VdotH = dot(v, h);
     if (VdotH < 0.0)
+    { 
+        l = float3(0);
         return 0.0;
+    }
 
     float3 F = Fresnel(F0, VdotH);
 

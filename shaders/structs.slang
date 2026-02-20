@@ -17,6 +17,7 @@ public struct Vertex
     public float3 position;
     public float3 normal;
     public float2 uv;
+    public float4 tangent;
 };
 
 public struct CameraData
@@ -34,11 +35,16 @@ public struct CameraData
 public enum DebugMode
 {
     None = 0,
-    Albedo = 1,
-    Emissive = 2,
-    Metallic = 3,
-    Roughness = 4,
-    Normal = 5
+    Albedo,
+    Emissive,
+    Metallic,
+    Roughness,
+    NormalMap,
+    Normal,
+    GeoNormal,
+    Tangent,
+    Bitangent,
+    TangentW,
 };
 
 public enum TonemapOperator

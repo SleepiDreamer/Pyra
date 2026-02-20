@@ -42,6 +42,12 @@ public float3 sampleTriangle(float3 x0, float3 x1, float3 x2, float2 bary)
     return (x0 * w) + (x1 * bary.x) + (x2 * bary.y);
 }
 
+public float4 sampleTriangle(float4 x0, float4 x1, float4 x2, float2 bary)
+{
+    float w = 1 - bary.x - bary.y;
+    return (x0 * w) + (x1 * bary.x) + (x2 * bary.y);
+}
+
 public float3 SrgbToLinear(float3 srgb)
 {
     return float3(SrgbToLinear(srgb.r), SrgbToLinear(srgb.g), SrgbToLinear(srgb.b));

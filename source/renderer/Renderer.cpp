@@ -118,7 +118,10 @@ void Renderer::Render(const float deltaTime)
 
 	if (m_reloadTimer >= 0.5f)
 	{
-		m_rtPipeline->CheckHotReload(m_device->GetDevice(), *m_commandQueue, m_scene->GetHitGroupRecords());
+		if (m_rtPipeline->CheckHotReload(m_device->GetDevice(), *m_commandQueue, m_scene->GetHitGroupRecords()))
+		{
+			m_renderSettings.frame = 0;
+		}
 		m_reloadTimer = 0.0f;
 	}
 	else
@@ -151,7 +154,7 @@ void Renderer::Render(const float deltaTime)
 			ImGui::End();
 			ImGui::PopStyleColor();
 
-			ImGui::SetNextWindowPos(ImVec2(m_window.GetWidth() / 2.0f - 400.0f, m_window.GetHeight() / 2.0f - 100.0f));
+			ImGui::SetNextWindowPos(ImVec2(m_window.GetWidth() / 2.0f - 400.0f, m_window.GetHeight() / 2.0f - 200.0f));
 			ImGui::Begin("Shader Compile Errors", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
 			ImGui::PushTextWrapPos(800.0f);
 			ImGui::TextWrapped("%s", m_rtPipeline->GetLastCompileError().c_str());
@@ -161,16 +164,25 @@ void Renderer::Render(const float deltaTime)
 
 		auto config = ImSettings();
 		config.push<float>().as_drag().min(0).max(10).speed(0.02f).pop();
+		auto config2 = ImSettings();
+		config2.push<float>().as_drag().min(0).max(100).speed(0.02f).pop();
 
 		ImGui::SetNextWindowPos(ImVec2(0, 0));
 		ImGui::Begin("Debug");
 		ImGui::Text("FPS: %.1f", ImGui::GetIO().Framerate);
 		ImGui::Text("Frame: %u", m_renderSettings.frame);
 		auto responseRender = ImReflect::Input("Render Settings", m_renderSettings, config);
-		auto responseCamera = ImReflect::Input("Camera", camData, config);
-		if (responseRender.get<RenderSettings>().is_changed() || responseCamera.get<CameraData>().is_changed())
+		auto responseCamera = ImReflect::Input("Camera", camData, config2);
+		if (responseRender.get<RenderSettings>().is_changed())
 		{
-			m_renderSettings.frame = 0; // Reset accumulation on settings change
+			m_renderSettings.frame = 0;
+		}
+		if (responseCamera.get<CameraData>().is_changed())
+		{
+			m_renderSettings.frame = 0;
+			m_camera->SetPosition(camData.position);
+			m_camera->SetDirection(camData.forward);
+			m_camera->m_fov = camData.fov;
 		}
 		
 		ImGui::End();

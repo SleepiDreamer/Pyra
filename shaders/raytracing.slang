@@ -179,7 +179,18 @@ void Miss(inout Payload payload)
     if (renderSettings.whiteFurnace == 1)
     {
         payload.radiance += float3(1) * payload.throughput;
+        return;
     }
 
-    payload.radiance += float3(1) * renderSettings.skyExposure * payload.throughput * (WorldRayDirection().y + 1.1) / 2.1;
+    if (renderSettings.hdriIndex != -1)
+    {
+        Texture2D hdri = DescriptorHandle<Texture2D>(uint2(renderSettings.hdriIndex, 0));
+        float2 uv = DirectionToEquirectangular(WorldRayDirection());
+        float3 env = min(hdri.SampleLevel(linearSampler, uv, 0).rgb, 30.0);
+        payload.radiance += env * renderSettings.skyExposure * payload.throughput;
+    }
+    else
+    {
+        payload.radiance += float3(1) * renderSettings.skyExposure * payload.throughput * (WorldRayDirection().y + 1.1) / 2.1;
+    }
 }

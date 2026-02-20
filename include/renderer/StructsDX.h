@@ -69,10 +69,10 @@ struct RenderSettings
 	float exposure = 10.0f;
 	float skyExposure = 1.0f;
 	float lightExposure = 1.0f;
+	int32_t hdriIndex = -1;
 	uint32_t frame = 0;
 	TonemapOperator tonemapper = AgX;
 	BOOL whiteFurnace = false;
 	BOOL upscaling = false;
-	uint32_t _pad0 = 0;
 };
 IMGUI_REFLECT(RenderSettings, debugMode, bounces, exposure, skyExposure, lightExposure, whiteFurnace, upscaling, tonemapper)

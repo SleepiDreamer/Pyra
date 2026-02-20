@@ -62,11 +62,11 @@ public struct RenderSettings
     public float exposure;
     public float skyExposure;
     public float lightExposure;
+    public int hdriIndex;
     public uint frame;
     public TonemapOperator tonemapper;
     public bool whiteFurnace;
     public bool upscaling;
-    uint _pad0;
 };
 
 public struct Material

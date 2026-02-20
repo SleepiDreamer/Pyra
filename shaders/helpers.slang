@@ -1,5 +1,7 @@
 module helpers;
 
+static const float PI = 3.141592653589f;
+
 public float sanitize(float x)
 {
     return isnan(x) || isinf(x) ? 0.0f : x;
@@ -81,4 +83,11 @@ public float3 OffsetRay(float3 p, float3 n)
         abs(p.x) < origin ? p.x + float_scale * n.x : p_i.x,
                   abs(p.y) < origin ? p.y + float_scale * n.y : p_i.y,
                   abs(p.z) < origin ? p.z + float_scale * n.z : p_i.z);
+}
+
+public float2 DirectionToEquirectangular(float3 dir)
+{
+    float u = atan2(dir.z, dir.x) / (2.0 * PI) + 0.5;
+    float v = 1.0 - (asin(clamp(dir.y, -1.0, 1.0)) / PI + 0.5);
+    return float2(u, v);
 }

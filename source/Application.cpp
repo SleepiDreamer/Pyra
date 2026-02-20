@@ -18,6 +18,7 @@ Application::Application(const bool debugLayer)
 	m_camera->m_fov = 60.0f;
 	m_renderer->SetCamera(m_camera);
 	m_renderer->LoadModel("assets/models/FlightHelmet/FlightHelmet.gltf");
+	m_renderer->LoadHDRI("assets/environments/cedar_bridge_2_2k.hdr");
 
 	auto glfwWindow = m_window->GetGLFWWindow();
 

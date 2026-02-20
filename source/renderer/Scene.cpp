@@ -2,10 +2,13 @@
 #include "Model.h"
 #include "Mesh.h"
 #include "TLAS.h"
+#include "Texture.h"
 #include "CommandQueue.h"
 #include "UploadContext.h"
 #include "GPUAllocator.h"
 #include "StructsDX.h"
+
+#include <stb_image.h>
 
 Scene::Scene(RenderContext& context)
 	: m_context(context)
@@ -16,6 +19,9 @@ Scene::~Scene() = default;
 
 void Scene::LoadModel(const std::string& path)
 {
+	std::cout << "Loading model: " << path;
+	std::chrono::steady_clock::time_point startTime = std::chrono::steady_clock::now();
+
 	auto commandList = m_context.commandQueue->GetCommandList();
 	m_models.emplace_back(m_context, commandList.Get(), path);
 
@@ -36,7 +42,7 @@ void Scene::LoadModel(const std::string& path)
 	m_tlas = std::make_unique<TLAS>(m_context);
 	m_tlas->Build(m_context.device, instances);
 
-	UploadMaterials();
+	UploadMaterialData();
 
 	m_context.uploadContext->Flush();
 
@@ -53,9 +59,13 @@ void Scene::LoadModel(const std::string& path)
 
 	m_context.commandQueue->ExecuteCommandList(commandList);
 	m_context.commandQueue->Flush();
+
+	auto time = std::chrono::steady_clock::now() - startTime;
+	std::cout << "\r";
+	std::cout << "Loaded model: " << path << ". Took " << std::chrono::duration_cast<std::chrono::milliseconds>(time).count() / 1000.0 << " s.\n";
 }
 
-void Scene::UploadMaterials()
+void Scene::UploadMaterialData()
 {
 	std::vector<MaterialData> materials;
 	for (const auto& model : m_models)
@@ -115,4 +125,29 @@ std::vector<HitGroupRecord> Scene::GetHitGroupRecords() const
 		materialOffset += static_cast<uint32_t>(model.GetMaterials().size());
 	}
 	return records;
+}
+
+void Scene::LoadHDRI(const std::string& path)
+{
+	m_hdri = std::make_unique<Texture>();
+
+	std::cout << "Loading HDRI: " << path << "\r";
+	std::chrono::steady_clock::time_point startTime = std::chrono::steady_clock::now();
+	int width, height, nrChannels;
+	float* data = stbi_loadf(path.c_str(), &width, &height, &nrChannels, 4);
+	if (data)
+	{
+		m_hdri->Create(m_context, data, width, height, DXGI_FORMAT_R32G32B32A32_FLOAT, path);
+	}
+	else
+	{
+		ThrowError("Failed to load HDRI: " + path);
+	}
+	auto time = std::chrono::steady_clock::now() - startTime;
+	std::cout << "Loaded HDRI: " << path << ". Took " << std::chrono::duration_cast<std::chrono::milliseconds>(time).count() / 1000.0 << " s.\n";
+}
+
+int32_t Scene::GetHDRIDescriptorIndex() const
+{
+	return m_hdri ? m_hdri->GetDescriptorIndex() : -1;
 }

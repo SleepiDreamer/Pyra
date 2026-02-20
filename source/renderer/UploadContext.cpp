@@ -43,7 +43,21 @@ void UploadContext::UploadTexture(const GPUBuffer& dest, const void* data, const
         m_allocator.CreateBuffer(uploadSize, D3D12_RESOURCE_STATE_GENERIC_READ, 
         D3D12_RESOURCE_FLAG_NONE, D3D12_HEAP_TYPE_UPLOAD, "Texture Upload Staging Buffer");
 
-    UINT bytesPerPixel = 4; // TODO: handle for other formats
+    UINT bytesPerPixel = 4;
+    switch (format)
+    {
+    case DXGI_FORMAT_R16G16B16A16_FLOAT:
+        bytesPerPixel = 8;
+		break;
+    case DXGI_FORMAT_R16G16B16A16_UNORM:
+        bytesPerPixel = 8;
+		break;
+	case DXGI_FORMAT_R32G32B32A32_FLOAT:
+		bytesPerPixel = 16;
+        break;
+    }
+
+
     D3D12_SUBRESOURCE_DATA subresourceData{};
     subresourceData.pData = data;
     subresourceData.RowPitch = static_cast<LONG_PTR>(width) * bytesPerPixel;

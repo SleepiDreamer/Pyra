@@ -24,7 +24,6 @@
 using namespace Microsoft::WRL;
 
 // TODO
-// - normal mapping/Mikkt
 // - explicit lights
 // - HDRI
 // - DLSS SR & RR
@@ -85,14 +84,13 @@ void Renderer::ToggleFullscreen() const
 
 void Renderer::LoadModel(const std::string& path)
 {
-	std::cout << "Loading model: " << path;
-	std::chrono::steady_clock::time_point startTime = std::chrono::steady_clock::now();
 	m_scene->LoadModel(path);
-	auto time = std::chrono::steady_clock::now() - startTime;
-	std::cout << "\r";
-	std::cout << "Loaded model: " << path << ". Took " << std::chrono::duration_cast<std::chrono::milliseconds>(time).count() / 1000.0 << " s.\n";
-
 	m_rtPipeline->RebuildShaderTables(m_device->GetDevice(), m_scene->GetHitGroupRecords());
+}
+
+void Renderer::LoadHDRI(const std::string& path)
+{
+	m_scene->LoadHDRI(path);
 }
 
 void Renderer::Resize(const int width, const int height)
@@ -188,6 +186,7 @@ void Renderer::Render(const float deltaTime)
 		ImGui::End();
 	}
 
+	m_renderSettings.hdriIndex = m_scene->GetHDRIDescriptorIndex();
 	m_renderSettingsCB->Update(backBufferIndex, m_renderSettings);
 	m_cameraCB->Update(backBufferIndex, camData);
 

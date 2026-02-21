@@ -16,7 +16,7 @@ public float3 tonemap(float3 color, TonemapOperator op, float exposure)
         case TonemapOperator::Aces:     return tonemapACES(color);
         case TonemapOperator::Reinhard: return tonemapReinhard(color);
         case TonemapOperator::AgX:      return tonemapAgX(color);
-        case TonemapOperator::GT7:      return tonemapGT7(color, false, 800.0f);
+        case TonemapOperator::GT7:      return tonemapGT7(color);
         default:                        return color;
     }
 }

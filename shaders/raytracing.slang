@@ -98,6 +98,7 @@ void RayGen()
         : accumulationBuffer[idx].rgb / (renderSettings.frame + 1);
 
     if (renderSettings.debugMode == DebugMode::None) result = tonemap(result, renderSettings.tonemapper, renderSettings.exposure);
+    if (renderSettings.whiteFurnace) result = tonemap(uv.x * 5.0, TonemapOperator::GT7, 1.0);
     outputBuffer[idx] = float4(result, 1.0);
 }
 

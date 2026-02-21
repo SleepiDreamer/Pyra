@@ -41,7 +41,7 @@ float physicalValueToFrameBufferValue(float physical)
 // Utility functions.
 // -----------------------------------------------------------------------------
 
-float smoothStep(float x, float edge0, float edge1)
+float SmoothStep(float x, float edge0, float edge1)
 {
     float t = (x - edge0) / (edge1 - edge0);
 
@@ -59,7 +59,7 @@ float smoothStep(float x, float edge0, float edge1)
 
 float chromaCurve(float x, float a, float b)
 {
-    return 1.0f - smoothStep(x, a, b);
+    return 1.0f - SmoothStep(x, a, b);
 }
 
 // -----------------------------------------------------------------------------
@@ -100,7 +100,7 @@ struct GTToneMappingCurveV2
             return 0.0f;
         }
 
-        float weightLinear = smoothStep(x, 0.0f, midPoint_);
+        float weightLinear = SmoothStep(x, 0.0f, midPoint_);
         float weightToe = 1.0f - weightLinear;
 
         // Shoulder mapping for highlights.
@@ -412,16 +412,13 @@ float3 rec2020ToRec709(float3 c)
     );
 }
 
-public float3 tonemapGT7(float3 rgb, bool hdr = false, float peakLuminance = 800.0f)
+public float3 tonemapGT7(float3 rgb)
 {
     rgb = rec709ToRec2020(rgb);
 
     GT7ToneMapping toneMapper;
-    if (hdr)
-        toneMapper.initializeAsHDR(peakLuminance);
-    else
-        toneMapper.initializeAsSDR();
+    toneMapper.initializeAsSDR();
 
     float3 result = toneMapper.applyToneMapping(rgb);
-    return saturate(rec2020ToRec709(result));
+    return max(rec2020ToRec709(result), 0.0);
 }

@@ -129,6 +129,9 @@
     <ClInclude Include="include\renderer\MikkT.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="include\renderer\PostProcessPass.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\main.cpp">
@@ -245,6 +248,9 @@
     <ClCompile Include="external\mikkt\mikktspace.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="source\renderer\PostProcessPass.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\raytracing.slang" />
@@ -262,6 +268,7 @@
     <None Include="shaders\tonemapping\reinhard.slang" />
     <None Include="shaders\pbr.slang" />
     <None Include="shaders\tonemapping\gt7.slang" />
+    <None Include="shaders\tonemapping_pass.slang" />
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="external\glm\glm.natvis" />

@@ -3,6 +3,54 @@
 #include <glm/vec3.hpp>
 #include <ImReflect.hpp>
 
+struct RenderData
+{
+	int32_t hdriIndex = -1;
+	uint32_t frame = 0;
+};
+
+enum DebugMode
+{
+	None,
+	Albedo,
+	Emissive,
+	Metallic,
+	Roughness,
+	NormalMap,
+	Normal,
+	GeoNormal,
+	Tangent,
+	Bitangent,
+	TangentW,
+};
+
+struct RenderSettings
+{
+	DebugMode debugMode = None;
+	uint32_t bounces = 2;
+	float skyIntensity = 1.0f;
+	float lightIntensity = 1.0f;
+	BOOL whiteFurnace = false;
+	BOOL upscaling = false;
+};
+IMGUI_REFLECT(RenderSettings, debugMode, bounces, skyIntensity, lightIntensity, whiteFurnace, upscaling)
+
+enum TonemapOperator
+{
+	Linear,
+	Aces,
+	Reinhard,
+	AgX,
+	GT7,
+};
+
+struct PostProcessSettings
+{
+	TonemapOperator tonemapper = AgX;
+	float exposure = 25.0f;
+};
+IMGUI_REFLECT(PostProcessSettings, tonemapper, exposure)
+
 struct CameraData
 {
 	glm::vec3 position;
@@ -37,43 +85,3 @@ struct MaterialData
 	uint32_t _pad0;
 	uint32_t _pad1;
 };
-
-
-enum DebugMode
-{
-	None = 0,
-	Albedo,
-	Emissive,
-	Metallic,
-	Roughness,
-	NormalMap,
-	Normal,
-	GeoNormal,
-	Tangent,
-	Bitangent,
-	TangentW,
-};
-
-enum TonemapOperator
-{
-	Linear = 0,
-	Aces,
-	Reinhard,
-	AgX,
-	GT7,
-};
-
-struct RenderSettings
-{
-	DebugMode debugMode = None;
-	uint32_t bounces = 2;
-	float exposure = 25.0f;
-	float skyExposure = 1.0f;
-	float lightExposure = 1.0f;
-	int32_t hdriIndex = -1;
-	uint32_t frame = 0;
-	TonemapOperator tonemapper = AgX;
-	BOOL whiteFurnace = false;
-	BOOL upscaling = false;
-};
-IMGUI_REFLECT(RenderSettings, debugMode, bounces, exposure, skyExposure, lightExposure, whiteFurnace, upscaling, tonemapper)

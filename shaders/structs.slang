@@ -12,6 +12,52 @@ public struct [raypayload] Payload
     public RNG rng : write(caller, closesthit) : read(caller, closesthit);
 };
 
+public struct RenderData
+{
+    public int hdriIndex;
+    public uint frame;
+}
+
+public enum DebugMode
+{
+    None,
+    Albedo,
+    Emissive,
+    Metallic,
+    Roughness,
+    NormalMap,
+    Normal,
+    GeoNormal,
+    Tangent,
+    Bitangent,
+    TangentW,
+};
+
+public struct RenderSettings
+{
+    public DebugMode debugMode;
+    public uint bounces;
+    public float skyIntensity;
+    public float lightIntensity;
+    public bool whiteFurnace;
+    public bool upscaling;
+};
+
+public enum TonemapOperator
+{
+    Linear,
+    Aces,
+    Reinhard,
+    AgX,
+    GT7,
+};
+
+public struct PostProcessSettings
+{
+    public TonemapOperator tonemapper;
+    public float exposure;
+}
+
 public struct Vertex
 {
     public float3 position;
@@ -30,44 +76,6 @@ public struct CameraData
     uint _pad1;
     public float3 up;
     uint _pad2;
-};
-
-public enum DebugMode
-{
-    None = 0,
-    Albedo,
-    Emissive,
-    Metallic,
-    Roughness,
-    NormalMap,
-    Normal,
-    GeoNormal,
-    Tangent,
-    Bitangent,
-    TangentW,
-};
-
-public enum TonemapOperator
-{
-    Linear = 0,
-    Aces,
-    Reinhard,
-    AgX,
-    GT7,
-};
-
-public struct RenderSettings
-{
-    public DebugMode debugMode;
-    public uint bounces;
-    public float exposure;
-    public float skyExposure;
-    public float lightExposure;
-    public int hdriIndex;
-    public uint frame;
-    public TonemapOperator tonemapper;
-    public bool whiteFurnace;
-    public bool upscaling;
 };
 
 public struct Material

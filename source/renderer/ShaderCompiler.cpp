@@ -27,25 +27,30 @@ void ShaderCompiler::diagnoseIfNeeded(slang::IBlob* diagnosticsBlob, Compilation
     }
 }
 
-ShaderCompiler::CompilationResult ShaderCompiler::Compile(const std::string& filePath) const
+ShaderCompiler::CompilationResult ShaderCompiler::Compile(const std::string& filePath, const std::vector<std::string>& entryPoints, bool isRaytracing) const
 {
     CompilationResult result;
+
+    std::vector<std::string> epNames = entryPoints.empty()
+        ? std::vector<std::string>{"RayGen", "ClosestHit", "Miss"}
+		: entryPoints;
+
+    bool wholeProgram = isRaytracing;
 
     slang::SessionDesc sessionDesc{};
     slang::TargetDesc targetDesc{};
     targetDesc.format = SLANG_DXIL;
     targetDesc.profile = m_globalSession->findProfile("sm_6_6");
-    std::array<slang::CompilerOptionEntry, 1> options = {{{
-    	slang::CompilerOptionName::GenerateWholeProgram,
-		{
-			.kind = slang::CompilerOptionValueKind::Int, .intValue0 = 1, .intValue1 = 0, .stringValue0 = nullptr,
-			.stringValue1 = nullptr }
-		    }
-	    }
-    };
+
+    std::array<slang::CompilerOptionEntry, 1> options = { {{
+        slang::CompilerOptionName::GenerateWholeProgram,
+        {.kind = slang::CompilerOptionValueKind::Int,
+          .intValue0 = wholeProgram ? 1 : 0, .intValue1 = 0,
+          .stringValue0 = nullptr, .stringValue1 = nullptr }
+    }} };
     sessionDesc.compilerOptionEntries = options.data();
     sessionDesc.compilerOptionEntryCount = static_cast<uint32_t>(options.size());
-	sessionDesc.targets = &targetDesc;
+    sessionDesc.targets = &targetDesc;
     sessionDesc.targetCount = 1;
 
     std::string directory = std::filesystem::path(filePath).parent_path().string();
@@ -65,23 +70,22 @@ ShaderCompiler::CompilationResult ShaderCompiler::Compile(const std::string& fil
     std::vector<slang::IComponentType*> components;
     components.push_back(module);
 
-    const char* entryPointNames[] = { "RayGen", "ClosestHit", "Miss" };
-    std::vector<Slang::ComPtr<slang::IEntryPoint>> entryPoints;
-    for (const auto& name : entryPointNames)
+    std::vector<Slang::ComPtr<slang::IEntryPoint>> eps;
+    for (const auto& name : epNames)
     {
         Slang::ComPtr<slang::IEntryPoint> ep;
-        module->findEntryPointByName(name, ep.writeRef());
+        module->findEntryPointByName(name.c_str(), ep.writeRef());
         if (!ep)
         {
             result.errorLog = std::string("Entry point not found: ") + name;
             return result;
         }
-        entryPoints.push_back(ep);
+        eps.push_back(ep);
         components.push_back(ep.get());
     }
 
     Slang::ComPtr<slang::IComponentType> composed;
-	session->createCompositeComponentType(components.data(),
+    session->createCompositeComponentType(components.data(),
         static_cast<SlangInt>(components.size()),
         composed.writeRef(), diagnostics.writeRef());
     diagnoseIfNeeded(diagnostics.get(), result);
@@ -91,7 +95,14 @@ ShaderCompiler::CompilationResult ShaderCompiler::Compile(const std::string& fil
     diagnoseIfNeeded(diagnostics.get(), result);
 
     Slang::ComPtr<slang::IBlob> code;
-    linked->getTargetCode(0, code.writeRef(), diagnostics.writeRef());
+    if (wholeProgram)
+    {
+        linked->getTargetCode(0, code.writeRef(), diagnostics.writeRef());
+    }
+    else
+    {
+        linked->getEntryPointCode(0, 0, code.writeRef(), diagnostics.writeRef());
+    }
     diagnoseIfNeeded(diagnostics.get(), result);
 
     if (!code) { result.errorLog = "Failed to generate code"; return result; }

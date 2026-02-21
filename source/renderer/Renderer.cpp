@@ -12,6 +12,7 @@
 #include "ShaderCompiler.h"
 #include "RootSignature.h"
 #include "RTPipeline.h"
+#include "PostProcessPass.h"
 #include "ImGuiWrapper.h"
 #include "Scene.h"
 #include "StructsDX.h"
@@ -26,7 +27,6 @@ using namespace Microsoft::WRL;
 // TODO
 // - explicit lights
 // - DLSS SR & RR
-// - Tonemapping pipeline
 
 Renderer::Renderer(Window& window, bool debug)
 	: m_window(window), m_prevCamData()
@@ -35,12 +35,11 @@ Renderer::Renderer(Window& window, bool debug)
 	auto device = m_device->GetDevice();
 	m_commandQueue = std::make_unique<CommandQueue>(m_device->GetDevice(), "Main", D3D12_COMMAND_LIST_TYPE_DIRECT);
 	auto commandList = m_commandQueue->GetCommandList();
-	m_descriptorHeap = std::make_unique<DescriptorHeap>(device, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, 4096, true,
-	                                                    L"CBV SRV UAV Descriptor Heap");
+	m_descriptorHeap = std::make_unique<DescriptorHeap>(device, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, 4096, true, L"CBV SRV UAV Descriptor Heap");
 	m_allocator = std::make_unique<GPUAllocator>(device, m_device->GetAdapter());
 	m_uploadContext = std::make_unique<UploadContext>(*m_allocator, device);
 
-	m_context = {device, m_allocator.get(), m_commandQueue.get(), m_descriptorHeap.get(), m_uploadContext.get()};
+	m_context = { device, m_allocator.get(), m_commandQueue.get(), m_descriptorHeap.get(), m_uploadContext.get() };
 
 	m_swapChain = std::make_unique<SwapChain>(window, device, m_device->GetAdapter(), m_commandQueue.get());
 	m_imgui = std::make_unique<ImGuiWrapper>(window, m_context, m_swapChain->GetFormat(), NUM_FRAMES_IN_FLIGHT);
@@ -51,26 +50,29 @@ Renderer::Renderer(Window& window, bool debug)
 
 	const int width = window.GetWidth();
 	const int height = window.GetHeight();
-	m_rtOutputBuffer = std::make_unique<OutputBuffer>(m_context, DXGI_FORMAT_R10G10B10A2_UNORM, width, height,
-	                                                  L"RT Output Buffer");
-	m_accumulationBuffer = std::make_unique<OutputBuffer>(m_context, DXGI_FORMAT_R32G32B32A32_FLOAT, width, height,
-	                                                      L"Accumulation Buffer");
+	m_accumulationBuffer = std::make_unique<OutputBuffer>(m_context, DXGI_FORMAT_R32G32B32A32_FLOAT, width, height, L"Accumulation Buffer");
+	m_outputBuffer = std::make_unique<OutputBuffer>(m_context, DXGI_FORMAT_R10G10B10A2_UNORM, width, height, L"RT Output Buffer");
 
 	m_rootSignature = std::make_unique<RootSignature>();
-	m_rootSignature->AddDescriptorTable(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 1, 0, 0, "outputBuffer"); // u0:0 RT output
-	m_rootSignature->AddDescriptorTable(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 1, 1, 0, "accumulationBuffer"); // u1:0 accumulation buffer
-	m_rootSignature->AddRootSRV(0, 0, "sceneBVH"); // t0:0 TLAS
-	m_rootSignature->AddRootSRV(1, 0, "materials"); // t1:0 materials
-	m_rootSignature->AddRootCBV(0, 0, "camera"); // b0:0 camera
-	m_rootSignature->AddRootCBV(1, 0, "renderSettings"); // b1:0 render settings
-	m_rootSignature->AddStaticSampler(0); // s0:0 linear sampler
+	m_rootSignature->AddDescriptorTable(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 1, 0, 0, "accumulationBuffer"); // u0:0 accumulation buffer
+	m_rootSignature->AddRootSRV(0, 0, "sceneBVH");			 // t0:0 TLAS
+	m_rootSignature->AddRootSRV(1, 0, "materials");			 // t1:0 materials
+	m_rootSignature->AddRootCBV(0, 0, "camera");			 // b0:0 camera
+	m_rootSignature->AddRootCBV(1, 0, "renderSettings");	 // b1:0 render settings
+	m_rootSignature->AddRootCBV(2, 0, "renderData");		 // b2:0 render data
+	m_rootSignature->AddRootCBV(3, 0, "postProcessSettings");// b3:0 post processing settings
+	m_rootSignature->AddStaticSampler(0);					 // s0:0 linear sampler
 	m_rootSignature->Build(device, L"RT Root Signature");
 
 	m_rtPipeline = std::make_unique<RTPipeline>(device, m_rootSignature->Get(), *m_shaderCompiler,
 	                                            m_scene->GetHitGroupRecords(), "shaders/raytracing.slang");
 
+	m_tonemappingPass = std::make_unique<PostProcessPass>(m_context, *m_shaderCompiler, "shaders/tonemapping_pass.slang", "CSMain");
+
 	m_cameraCB = std::make_unique<CBVBuffer<CameraData>>(*m_allocator, "Camera CB");
 	m_renderSettingsCB = std::make_unique<CBVBuffer<RenderSettings>>(*m_allocator, "Render Settings CB");
+	m_renderDataCB = std::make_unique<CBVBuffer<RenderData>>(*m_allocator, "Render Data CB");
+	m_postProcessSettingsCB = std::make_unique<CBVBuffer<PostProcessSettings>>(*m_allocator, "Post Process Settings CB");
 
 	m_commandQueue->ExecuteCommandList(commandList);
 	m_commandQueue->Flush();
@@ -112,7 +114,7 @@ void Renderer::Resize(const int width, const int height)
 	ResetAccumulation();
 	m_commandQueue->Flush();
 	m_swapChain->Resize(width, height, m_device->GetDevice());
-	m_rtOutputBuffer->Resize(m_device->GetDevice(), width, height);
+	m_outputBuffer->Resize(m_device->GetDevice(), width, height);
 	m_accumulationBuffer->Resize(m_device->GetDevice(), width, height);
 }
 
@@ -129,6 +131,7 @@ void Renderer::Render(const float deltaTime)
 		{
 			ResetAccumulation();
 		}
+		m_tonemappingPass->CheckHotReload(*m_commandQueue);
 		m_reloadTimer = 0.0f;
 	}
 	else
@@ -146,7 +149,7 @@ void Renderer::Render(const float deltaTime)
 	// Begin frame
 	{
 		m_imgui->BeginFrame();
-		m_rtOutputBuffer->Transition(commandList.Get(), D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+		m_outputBuffer->Transition(commandList.Get(), D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
 		m_swapChain->Transition(commandList.Get(), D3D12_RESOURCE_STATE_RENDER_TARGET);
 	}
 
@@ -177,8 +180,9 @@ void Renderer::Render(const float deltaTime)
 		ImGui::SetNextWindowPos(ImVec2(0, 0));
 		ImGui::Begin("Debug");
 		ImGui::Text("FPS: %.1f", ImGui::GetIO().Framerate);
-		ImGui::Text("Frame: %u", m_renderSettings.frame);
+		ImGui::Text("Frame: %u", m_renderData.frame);
 		auto responseRender = ImReflect::Input("Render Settings", m_renderSettings, config);
+		auto responsePost = ImReflect::Input("Post Process Settings", m_postProcessSettings, config);
 		auto responseCamera = ImReflect::Input("Camera", camData, config2);
 		if (responseRender.get<RenderSettings>().is_changed())
 		{
@@ -195,38 +199,61 @@ void Renderer::Render(const float deltaTime)
 		ImGui::End();
 	}
 
-	m_renderSettings.hdriIndex = m_scene->GetHDRIDescriptorIndex();
+	m_renderData.hdriIndex = m_scene->GetHDRIDescriptorIndex();
 	m_renderSettingsCB->Update(backBufferIndex, m_renderSettings);
+	m_renderDataCB->Update(backBufferIndex, m_renderData);
+	m_postProcessSettingsCB->Update(backBufferIndex, m_postProcessSettings);
 	m_cameraCB->Update(backBufferIndex, camData);
 
 	// Record commands
 	{
-		constexpr float clearColor[] = { 0.0f, 0.2f, 0.4f, 1.0f };
-		commandList->ClearRenderTargetView(m_swapChain->GetCurrentBackBufferRtv().cpuHandle, clearColor, 0, nullptr);
+		// Raytracing pass
+		{
+			ID3D12DescriptorHeap* heaps[] = { m_descriptorHeap->GetHeap() };
+			commandList->SetDescriptorHeaps(1, heaps);
+			commandList->SetComputeRootSignature(m_rootSignature->Get());
+			commandList->SetPipelineState1(m_rtPipeline->GetPSO());
 
-		ID3D12DescriptorHeap* heaps[] = { m_descriptorHeap->GetHeap() };
-		commandList->SetDescriptorHeaps(1, heaps);
-		commandList->SetComputeRootSignature(m_rootSignature->Get());
-		commandList->SetPipelineState1(m_rtPipeline->GetPSO());
+			m_rootSignature->SetDescriptorTable(commandList.Get(), m_accumulationBuffer->GetUAV().gpuHandle, "accumulationBuffer");
+			m_rootSignature->SetRootSRV(commandList.Get(), m_scene->GetTLASAddress(), "sceneBVH");
+			m_rootSignature->SetRootCBV(commandList.Get(), m_cameraCB->GetGPUAddress(backBufferIndex), "camera");
+			m_rootSignature->SetRootCBV(commandList.Get(), m_renderSettingsCB->GetGPUAddress(backBufferIndex), "renderSettings");
+			m_rootSignature->SetRootCBV(commandList.Get(), m_renderDataCB->GetGPUAddress(backBufferIndex), "renderData");
+			m_rootSignature->SetRootCBV(commandList.Get(), m_postProcessSettingsCB->GetGPUAddress(backBufferIndex), "postProcessSettings");
+			m_rootSignature->SetRootSRV(commandList.Get(), m_scene->GetMaterialsBufferAddress(), "materials");
 
-		m_rootSignature->SetDescriptorTable(commandList.Get(), m_rtOutputBuffer->GetUAV().gpuHandle, "outputBuffer");
-		m_rootSignature->SetDescriptorTable(commandList.Get(), m_accumulationBuffer->GetUAV().gpuHandle, "accumulationBuffer");
-		m_rootSignature->SetRootSRV(commandList.Get(), m_scene->GetTLASAddress(), "sceneBVH");
-		m_rootSignature->SetRootCBV(commandList.Get(), m_cameraCB->GetGPUAddress(backBufferIndex), "camera");
-		m_rootSignature->SetRootCBV(commandList.Get(), m_renderSettingsCB->GetGPUAddress(backBufferIndex), "renderSettings");
-		m_rootSignature->SetRootSRV(commandList.Get(), m_scene->GetMaterialsBufferAddress(), "materials");
+			auto dispatchDesc = m_rtPipeline->GetDispatchRaysDesc();
+			dispatchDesc.Width = static_cast<UINT>(m_swapChain->GetViewport().Width);
+			dispatchDesc.Height = static_cast<UINT>(m_swapChain->GetViewport().Height);
+			commandList->DispatchRays(&dispatchDesc);
+		}
 
-		auto dispatchDesc = m_rtPipeline->GetDispatchRaysDesc();
-		dispatchDesc.Width = static_cast<UINT>(m_swapChain->GetViewport().Width);
-		dispatchDesc.Height = static_cast<UINT>(m_swapChain->GetViewport().Height);
-		commandList->DispatchRays(&dispatchDesc);
+		// Tonemapping pass
+		{
+			m_accumulationBuffer->Transition(commandList.Get(), D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+			m_outputBuffer->Transition(commandList.Get(), D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+
+			PostProcessPass::PostProcessBindings bindings;
+			bindings.inputSRV = m_accumulationBuffer->GetSRV().gpuHandle;
+			bindings.outputUAV = m_outputBuffer->GetUAV().gpuHandle;
+			bindings.constants[0] = m_renderSettingsCB->GetGPUAddress(backBufferIndex);
+			bindings.constants[1] = m_renderDataCB->GetGPUAddress(backBufferIndex);
+			bindings.constants[2] = m_postProcessSettingsCB->GetGPUAddress(backBufferIndex);
+			bindings.constantCount = 3;
+			bindings.width = static_cast<uint32_t>(m_swapChain->GetViewport().Width);
+			bindings.height = static_cast<uint32_t>(m_swapChain->GetViewport().Height);
+
+			m_tonemappingPass->Dispatch(commandList.Get(), bindings);
+
+			m_accumulationBuffer->Transition(commandList.Get(), D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+		}
 	}
 
 	// End frame
 	{
-		m_rtOutputBuffer->Transition(commandList.Get(), D3D12_RESOURCE_STATE_COPY_SOURCE);
+		m_outputBuffer->Transition(commandList.Get(), D3D12_RESOURCE_STATE_COPY_SOURCE);
 		m_swapChain->Transition(commandList.Get(), D3D12_RESOURCE_STATE_COPY_DEST);
-		commandList->CopyResource(backBuffer, m_rtOutputBuffer->GetResource());
+		commandList->CopyResource(backBuffer, m_outputBuffer->GetResource());
 
 		// ImGui
 		{
@@ -247,7 +274,7 @@ void Renderer::Render(const float deltaTime)
 		m_swapChain->Present();
 		m_commandQueue->WaitForFenceValue(m_fenceValues[m_swapChain->GetCurrentBackBufferIndex()]);
 		
-		m_renderSettings.frame++;
+		m_renderData.frame++;
 		if (camData.position != m_prevCamData.position || camData.forward != m_prevCamData.forward)
 		{
 			ResetAccumulation();

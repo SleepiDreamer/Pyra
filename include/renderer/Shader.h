@@ -9,7 +9,8 @@ class ShaderCompiler;
 class Shader
 {
 public:
-    Shader(ShaderCompiler& compiler, std::string filePath, const std::vector<std::string>& entryPoints);
+    Shader(ShaderCompiler& compiler, std::string filePath, 
+		   const std::vector<std::string>& entryPoints, bool isRaytracing);
     ~Shader();
 
     bool NeedsReload() const;
@@ -26,6 +27,8 @@ private:
     std::string m_filePath;
     std::vector<std::string> m_entryPoints;
     std::vector<uint8_t> m_blob;
+    bool m_isRaytracing;
+
     std::filesystem::file_time_type m_lastWriteTime;
 	bool m_lastCompileFailed = false;
 	std::string m_lastCompileError;

@@ -5,15 +5,14 @@ import rng;
 import random.sampling;
 import pbr;
 import camera;
-import tonemapping;
 
-uniform RWTexture2D<float4> outputBuffer : register(u0, space0);
-uniform RWTexture2D<float4> accumulationBuffer : register(u1, space0);
+uniform RWTexture2D<float4> accumulationBuffer : register(u0, space0);
 uniform RaytracingAccelerationStructure sceneBVH : register(t0, space0);
 StructuredBuffer<Material> materials : register(t1, space0);
 SamplerState linearSampler : register(s0, space0);
 ConstantBuffer<CameraData> camera : register(b0, space0);
 ConstantBuffer<RenderSettings> renderSettings : register(b1, space0);
+ConstantBuffer<RenderData> renderData : register(b2, space0);
 
 StructuredBuffer<Vertex> vertices : register(t0, space1);
 StructuredBuffer<uint> indices : register(t1, space1);
@@ -34,7 +33,7 @@ void RayGen()
     payload.throughput = float3(1.0, 1.0, 1.0);
     payload.done = false;
     payload.depth = 0;
-    payload.rng = RNG.create(idx, uint(size.x), renderSettings.frame);
+    payload.rng = RNG.create(idx, uint(size.x), renderData.frame);
     uv += payload.rng.nextFloat2() / size; // TODO: pass jitter from CPU for DLSS
 
     Camera cam;
@@ -88,18 +87,14 @@ void RayGen()
 
     float3 radiance = max(sanitize(payload.radiance), 0.0);
 
-    if (renderSettings.frame == 0)
+    if (renderData.frame == 0)
+    { 
         accumulationBuffer[idx].rgb = radiance;
+    }
     else
+    {
         accumulationBuffer[idx].rgb += radiance;
-
-    float3 result = renderSettings.upscaling
-        ? radiance
-        : accumulationBuffer[idx].rgb / (renderSettings.frame + 1);
-
-    if (renderSettings.debugMode == DebugMode::None) result = tonemap(result, renderSettings.tonemapper, renderSettings.exposure);
-    if (renderSettings.whiteFurnace) result = tonemap(uv.x * 5.0, TonemapOperator::GT7, 1.0);
-    outputBuffer[idx] = float4(result, 1.0);
+    }
 }
 
 [shader("closesthit")]
@@ -159,7 +154,7 @@ void ClosestHit(inout Payload payload, in BuiltInTriangleIntersectionAttributes 
         case DebugMode::TangentW:   payload.done = true; payload.radiance = tangentW; return;
     }
 
-    payload.radiance += emission * payload.throughput * renderSettings.lightExposure;
+    payload.radiance += emission * payload.throughput * renderSettings.lightIntensity;
 
     float3 wo;
     payload.throughput *= PBRIndirect(payload.rng, normal, geoNormal, -WorldRayDirection(), albedo, roughness, metallic, wo);
@@ -183,15 +178,15 @@ void Miss(inout Payload payload)
         return;
     }
 
-    if (renderSettings.hdriIndex != -1)
+    if (renderData.hdriIndex != -1)
     {
-        Texture2D hdri = DescriptorHandle<Texture2D>(uint2(renderSettings.hdriIndex, 0));
+        Texture2D hdri = DescriptorHandle<Texture2D>(uint2(renderData.hdriIndex, 0));
         float2 uv = DirectionToEquirectangular(WorldRayDirection());
         float3 env = min(hdri.SampleLevel(linearSampler, uv, 0).rgb, 30.0);
-        payload.radiance += env * renderSettings.skyExposure * payload.throughput;
+        payload.radiance += env * renderSettings.skyIntensity * payload.throughput;
     }
     else
     {
-        payload.radiance += float3(0.6, 0.8, 1.0) * renderSettings.skyExposure * payload.throughput * (WorldRayDirection().y + 1.1) / 2.1;
+        payload.radiance += float3(0.6, 0.8, 1.0) * renderSettings.skyIntensity * payload.throughput * (WorldRayDirection().y + 1.1) / 2.1;
     }
 }

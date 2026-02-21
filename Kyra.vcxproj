@@ -57,6 +57,7 @@
     <ClInclude Include="include\renderer\RootSignature.h" />
     <ClInclude Include="include\renderer\Texture.h" />
     <ClInclude Include="include\renderer\MikkT.h" />
+    <ClInclude Include="include\renderer\PostProcessPass.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="external\imgui\backends\imgui_impl_dx12.cpp" />
@@ -67,6 +68,7 @@
     <ClCompile Include="external\imgui\imgui_widgets.cpp" />
     <ClCompile Include="external\imgui\misc\cpp\imgui_stdlib.cpp" />
     <ClCompile Include="external\mikkt\mikktspace.c" />
+    <ClCompile Include="source\renderer\PostProcessPass.cpp" />
     <ClCompile Include="source\renderer\MikkT.cpp" />
     <ClCompile Include="source\renderer\ImGuiWrapper.cpp" />
     <ClCompile Include="source\Camera.cpp" />
@@ -116,6 +118,7 @@
     <None Include="shaders\tonemapping\agx.slang" />
     <None Include="shaders\tonemapping\gt7.slang" />
     <None Include="shaders\tonemapping\reinhard.slang" />
+    <None Include="shaders\tonemapping_pass.slang" />
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="external\glm\glm.natvis" />

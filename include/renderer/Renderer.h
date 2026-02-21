@@ -19,6 +19,7 @@ class OutputBuffer;
 class ShaderCompiler;
 class RootSignature;
 class RTPipeline;
+class PostProcessPass;
 class ImGuiWrapper;
 class Scene;
 template<typename T>
@@ -36,13 +37,13 @@ public:
 	void LoadModel(const std::string& path);
 	void LoadHDRI(const std::string& path);
 	void Resize(int width, int height);
-	void ResetAccumulation() { if (!m_renderSettings.upscaling) m_renderSettings.frame = 0; }
+	void ResetAccumulation() { if (!m_renderSettings.upscaling) m_renderData.frame = 0; }
 
 private:
 	Window& m_window;
+	std::unique_ptr<Device> m_device = nullptr;
 	std::shared_ptr<Camera> m_camera = nullptr;
 	CameraData m_prevCamData;
-	std::unique_ptr<Device> m_device = nullptr;
 
 	RenderContext m_context;
 	std::unique_ptr<GPUAllocator> m_allocator = nullptr;
@@ -54,16 +55,22 @@ private:
 	std::unique_ptr<SwapChain> m_swapChain = nullptr;
 	std::unique_ptr<ShaderCompiler> m_shaderCompiler;
 	std::unique_ptr<RootSignature> m_rootSignature;
-	std::unique_ptr<RTPipeline> m_rtPipeline;
+	std::unique_ptr<RTPipeline>	m_rtPipeline;
 	std::unique_ptr<ImGuiWrapper> m_imgui = nullptr;
 
 	std::unique_ptr<Scene> m_scene;
-	std::unique_ptr<CBVBuffer<CameraData>> m_cameraCB;
 	RenderSettings m_renderSettings{};
+	RenderData m_renderData{};
+	PostProcessSettings m_postProcessSettings{};
+	std::unique_ptr<CBVBuffer<CameraData>> m_cameraCB;
 	std::unique_ptr<CBVBuffer<RenderSettings>> m_renderSettingsCB;
+	std::unique_ptr<CBVBuffer<RenderData>> m_renderDataCB;
+	std::unique_ptr<CBVBuffer<PostProcessSettings>> m_postProcessSettingsCB;
 
-	std::unique_ptr<OutputBuffer> m_rtOutputBuffer;
 	std::unique_ptr<OutputBuffer> m_accumulationBuffer;
+	std::unique_ptr<OutputBuffer> m_outputBuffer;
+
+	std::unique_ptr<PostProcessPass> m_tonemappingPass;
 
 	float m_reloadTimer = 0.0f;
 };

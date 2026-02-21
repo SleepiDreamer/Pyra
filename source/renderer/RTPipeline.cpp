@@ -14,7 +14,7 @@ RTPipeline::RTPipeline(ID3D12Device10* device, ID3D12RootSignature* rootSignatur
 	: m_rootSignature(rootSignature)
 {
 	std::vector<std::string> entryPoints = {};
-    m_shader = std::make_unique<Shader>(compiler, shaderPath, entryPoints);
+    m_shader = std::make_unique<Shader>(compiler, shaderPath, entryPoints, true);
     if (!m_shader->IsValid())
     {
         ThrowError("Failed to compile RT shaders: " + shaderPath);
@@ -197,6 +197,7 @@ bool RTPipeline::CheckHotReload(ID3D12Device10* device, CommandQueue& commandQue
     commandQueue.Flush();
     Rebuild(device, records);
     std::cout << "[RTPipeline] Hot reload successful\n";
+
     return true;
 }
 

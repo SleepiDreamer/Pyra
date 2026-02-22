@@ -153,6 +153,8 @@ void Application::KeyCallback(GLFWwindow* window, int key, int scancode, int act
 
 void Application::ScrollCallback(GLFWwindow* window, double xoffset, double yoffset)
 {
+	ImGui_ImplGlfw_ScrollCallback(window, xoffset, yoffset);
+
 	auto* app = static_cast<Application*>(glfwGetWindowUserPointer(window));
 	if (app)
 	{
